@@ -9,12 +9,8 @@
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <span class="logo-icon">☕</span>
-      <span class="logo-text">CaféBook</span>
-    </div>
+    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
     <nav class="sidebar-nav">
       <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
       <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
@@ -25,7 +21,7 @@
     </nav>
     <div class="sidebar-footer">
       <div class="cafe-name">☕ Kopi Nusantara</div>
-      <div class="cafe-sub">Periode: Mei 2026</div>
+      <div class="cafe-sub" id="liveClock"></div>
     </div>
   </aside>
 
@@ -36,150 +32,164 @@
         <p class="page-sub">Input transaksi penjualan harian.</p>
       </div>
       <div class="topbar-right">
-        <div class="date-badge" id="liveClock"></div>
+        <span class="date-badge" id="omzet-hari">Omzet hari ini: —</span>
       </div>
     </header>
 
     <div style="display:grid;grid-template-columns:1fr 340px;gap:20px">
-
-      <!-- Menu Grid -->
       <div class="table-card">
-        <div class="table-header"><h3>Pilih Menu</h3>
-          <input id="searchMenu" placeholder="Cari menu..." style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-1);padding:7px 14px;font-size:13px;outline:none" />
+        <div class="table-header">
+          <h3>Pilih Menu</h3>
+          <input id="searchMenu" placeholder="Cari menu..." style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-1);padding:7px 14px;font-size:13px;outline:none" oninput="filterMenu(this.value)" />
         </div>
-        <div class="menu-grid" id="menuGrid"></div>
+        <div class="menu-grid" id="menuGrid"><p style="color:var(--text-3);font-size:13px">Memuat menu...</p></div>
       </div>
 
-      <!-- Order Summary -->
       <div class="table-card" style="display:flex;flex-direction:column">
         <div class="table-header"><h3>Pesanan</h3></div>
         <div id="orderList" style="flex:1;min-height:200px"></div>
         <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
           <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
-          <div class="summary-row"><span>Pajak (0%)</span><span>Rp 0</span></div>
           <div class="summary-row bold" style="font-size:16px;margin-top:8px;padding-top:8px">
             <span>Total</span><span id="total" class="val-green">Rp 0</span>
           </div>
           <button class="btn-primary full-w" style="margin-top:16px" onclick="bayar()">💳 Bayar Sekarang</button>
           <button class="btn-outline full-w" style="margin-top:8px" onclick="clearOrder()">Batal</button>
+          <span id="bayar-msg" style="font-size:13px;color:var(--green);display:none;margin-top:8px;display:block;text-align:center"></span>
         </div>
       </div>
     </div>
   </main>
 
   <style>
-    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-    .menu-item {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 12px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s;
-    }
-    .menu-item:hover { border-color: var(--accent); background: var(--accent-dim); }
-    .menu-item-name { font-size: 13px; font-weight: 500; color: var(--text-1); margin-bottom: 4px; }
-    .menu-item-price { font-size: 12px; color: var(--accent); }
-    .order-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 8px; }
-    .order-name { font-size: 13px; color: var(--text-1); flex: 1; }
-    .qty-controls { display: flex; align-items: center; gap: 8px; }
-    .qty-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-1); width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .qty-num { font-size: 13px; color: var(--text-2); min-width: 16px; text-align: center; }
-    .order-price { font-size: 13px; color: var(--green); min-width: 80px; text-align: right; }
-    .empty-order { text-align: center; color: var(--text-3); font-size: 13px; padding: 40px 0; }
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+    .menu-item{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.15s}
+    .menu-item:hover{border-color:var(--accent);background:var(--accent-dim)}
+    .menu-item-name{font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:4px}
+    .menu-item-price{font-size:12px;color:var(--accent)}
+    .order-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px}
+    .order-name{font-size:13px;color:var(--text-1);flex:1}
+    .qty-controls{display:flex;align-items:center;gap:8px}
+    .qty-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px}
+    .qty-num{font-size:13px;color:var(--text-2);min-width:16px;text-align:center}
+    .order-price{font-size:13px;color:var(--green);min-width:80px;text-align:right}
+    .empty-order{text-align:center;color:var(--text-3);font-size:13px;padding:40px 0}
   </style>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
   <script>
-    const menu = [
-      { name: 'Kopi Susu', price: 25000, emoji: '☕' },
-      { name: 'Es Kopi', price: 22000, emoji: '🧊' },
-      { name: 'Americano', price: 20000, emoji: '☕' },
-      { name: 'Matcha Latte', price: 35000, emoji: '🍵' },
-      { name: 'Cappuccino', price: 28000, emoji: '☕' },
-      { name: 'Croissant', price: 22000, emoji: '🥐' },
-      { name: 'Roti Bakar', price: 18000, emoji: '🍞' },
-      { name: 'Pisang Goreng', price: 12000, emoji: '🍌' },
-      { name: 'Cheesecake', price: 32000, emoji: '🍰' },
-      { name: 'Es Teh', price: 10000, emoji: '🍹' },
-    ];
-
+    let allMenu = [];
     let order = {};
 
-    function renderMenu(filter = '') {
-      const grid = document.getElementById('menuGrid');
-      grid.innerHTML = menu
-        .filter(m => m.name.toLowerCase().includes(filter.toLowerCase()))
-        .map(m => `
-          <div class="menu-item" onclick="addItem('${m.name}',${m.price})">
-            <div style="font-size:28px;margin-bottom:8px">${m.emoji}</div>
-            <div class="menu-item-name">${m.name}</div>
-            <div class="menu-item-price">Rp ${m.price.toLocaleString('id')}</div>
-          </div>
-        `).join('');
+    // Clock
+    setInterval(()=>{ document.getElementById('liveClock').textContent = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }, 1000);
+
+    // Load menu dari Supabase
+    async function loadMenu() {
+      const cafeId = await getCafeId();
+      const { data } = await db.from('menu').select('*').eq('cafe_id', cafeId).eq('aktif', true);
+      allMenu = data || [];
+      renderMenu(allMenu);
     }
 
-    function addItem(name, price) {
-      if (!order[name]) order[name] = { price, qty: 0 };
-      order[name].qty++;
+    function renderMenu(list) {
+      const grid = document.getElementById('menuGrid');
+      if(!list.length){ grid.innerHTML='<p style="color:var(--text-3);font-size:13px">Tidak ada menu.</p>'; return; }
+      grid.innerHTML = list.map(m=>`
+        <div class="menu-item" onclick="addItem('${m.nama}',${m.harga})">
+          <div style="font-size:26px;margin-bottom:6px">${m.emoji||'☕'}</div>
+          <div class="menu-item-name">${m.nama}</div>
+          <div class="menu-item-price">Rp ${m.harga.toLocaleString('id-ID')}</div>
+        </div>`).join('');
+    }
+
+    function filterMenu(q) {
+      renderMenu(allMenu.filter(m=>m.nama.toLowerCase().includes(q.toLowerCase())));
+    }
+
+    function addItem(nama, harga) {
+      if(!order[nama]) order[nama]={harga,qty:0};
+      order[nama].qty++;
       renderOrder();
     }
 
-    function changeQty(name, delta) {
-      if (!order[name]) return;
-      order[name].qty += delta;
-      if (order[name].qty <= 0) delete order[name];
+    function changeQty(nama, delta) {
+      if(!order[nama]) return;
+      order[nama].qty += delta;
+      if(order[nama].qty<=0) delete order[nama];
       renderOrder();
     }
 
     function renderOrder() {
       const list = document.getElementById('orderList');
       const items = Object.entries(order);
-      if (items.length === 0) {
-        list.innerHTML = '<div class="empty-order">Belum ada pesanan</div>';
-        document.getElementById('subtotal').textContent = 'Rp 0';
-        document.getElementById('total').textContent = 'Rp 0';
+      if(!items.length){
+        list.innerHTML='<div class="empty-order">Belum ada pesanan</div>';
+        document.getElementById('subtotal').textContent='Rp 0';
+        document.getElementById('total').textContent='Rp 0';
         return;
       }
-      let total = 0;
-      list.innerHTML = items.map(([name, {price, qty}]) => {
-        const sub = price * qty;
-        total += sub;
-        return `
-          <div class="order-row">
-            <div class="order-name">${name}</div>
-            <div class="qty-controls">
-              <button class="qty-btn" onclick="changeQty('${name}',-1)">−</button>
-              <span class="qty-num">${qty}</span>
-              <button class="qty-btn" onclick="changeQty('${name}',1)">+</button>
-            </div>
-            <div class="order-price">Rp ${sub.toLocaleString('id')}</div>
+      let total=0;
+      list.innerHTML = items.map(([nama,{harga,qty}])=>{
+        const sub=harga*qty; total+=sub;
+        return `<div class="order-row">
+          <div class="order-name">${nama}</div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty('${nama}',-1)">−</button>
+            <span class="qty-num">${qty}</span>
+            <button class="qty-btn" onclick="changeQty('${nama}',1)">+</button>
           </div>
-        `;
+          <div class="order-price">Rp ${sub.toLocaleString('id-ID')}</div>
+        </div>`;
       }).join('');
-      document.getElementById('subtotal').textContent = 'Rp ' + total.toLocaleString('id');
-      document.getElementById('total').textContent = 'Rp ' + total.toLocaleString('id');
+      document.getElementById('subtotal').textContent='Rp '+total.toLocaleString('id-ID');
+      document.getElementById('total').textContent='Rp '+total.toLocaleString('id-ID');
     }
 
-    function clearOrder() { order = {}; renderOrder(); }
+    function clearOrder(){ order={}; renderOrder(); }
 
-    function bayar() {
-      if (Object.keys(order).length === 0) return alert('Tambahkan menu dulu!');
-      alert('✅ Transaksi berhasil dicatat!');
+    async function bayar() {
+      const items = Object.entries(order);
+      if(!items.length){ alert('Tambahkan menu dulu!'); return; }
+
+      const total = items.reduce((s,[,{harga,qty}])=>s+(harga*qty),0);
+      const itemsArr = items.map(([nama,{harga,qty}])=>({nama,harga,qty,subtotal:harga*qty}));
+      const today = new Date().toISOString().split('T')[0];
+
+      const btn = document.querySelector('.btn-primary');
+      btn.textContent='Memproses...'; btn.disabled=true;
+
+      const cafeId = await getCafeId();
+
+      // Simpan ke tabel transaksi
+      const {error:errTrx} = await db.from('transaksi').insert({cafe_id:cafeId, total, items:itemsArr});
+      if(errTrx){ alert('Gagal simpan transaksi: '+errTrx.message); btn.textContent='💳 Bayar Sekarang'; btn.disabled=false; return; }
+
+      // Auto-catat ke cashflow
+      await db.from('cashflow').insert({cafe_id:cafeId, keterangan:'Penjualan Kasir', jenis:'pemasukan', kategori:'Penjualan', nominal:total, tanggal:today});
+
+      btn.textContent='💳 Bayar Sekarang'; btn.disabled=false;
+
+      const msg=document.getElementById('bayar-msg');
+      msg.textContent='✅ Transaksi berhasil! Total: Rp '+total.toLocaleString('id-ID');
+      msg.style.display='block';
+      setTimeout(()=>{ msg.style.display='none'; },3000);
+
       clearOrder();
+      await loadOmzet();
     }
 
-    document.getElementById('searchMenu').addEventListener('input', e => renderMenu(e.target.value));
-
-    // Live clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('liveClock').textContent = now.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    async function loadOmzet() {
+      const cafeId = await getCafeId();
+      const today = new Date().toISOString().split('T')[0];
+      const {data} = await db.from('transaksi').select('total').eq('cafe_id',cafeId).gte('created_at', today+'T00:00:00').lte('created_at', today+'T23:59:59');
+      const total = data?.reduce((s,r)=>s+r.total,0)||0;
+      document.getElementById('omzet-hari').textContent = 'Omzet hari ini: Rp '+total.toLocaleString('id-ID');
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    renderMenu();
+    loadMenu();
+    loadOmzet();
     renderOrder();
   </script>
 </body>
