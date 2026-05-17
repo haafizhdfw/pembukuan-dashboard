@@ -9,12 +9,8 @@
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <span class="logo-icon">☕</span>
-      <span class="logo-text">CaféBook</span>
-    </div>
+    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
     <nav class="sidebar-nav">
       <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
       <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
@@ -25,7 +21,7 @@
     </nav>
     <div class="sidebar-footer">
       <div class="cafe-name">☕ Kopi Nusantara</div>
-      <div class="cafe-sub">Periode: Mei 2026</div>
+      <div class="cafe-sub">Periode: <span id="periode"></span></div>
     </div>
   </aside>
 
@@ -36,181 +32,162 @@
         <p class="page-sub">Ringkasan keuangan lengkap — bukan sekadar omzet.</p>
       </div>
       <div class="topbar-right">
-        <select style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text-1);padding:8px 14px;font-size:13px">
-          <option>Mei 2026</option>
-          <option>April 2026</option>
-          <option>Maret 2026</option>
-        </select>
-        <button class="btn-outline">⬇ Export PDF</button>
+        <select id="pilih-bulan" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text-1);padding:8px 14px;font-size:13px" onchange="loadLabaRugi()"></select>
       </div>
     </header>
 
-    <div style="display:grid;grid-template-columns:1fr 360px;gap:20px">
-
-      <!-- P&L Statement -->
-      <div class="table-card">
-        <div class="table-header"><h3>Laporan Mei 2026</h3></div>
-
-        <div class="pl-section">
-          <div class="pl-label">PENDAPATAN</div>
-          <div class="pl-row">
-            <span>Penjualan Produk</span>
-            <span class="val-green">Rp 28.400.000</span>
-          </div>
-          <div class="pl-row pl-subtotal">
-            <span>Total Pendapatan</span>
-            <span class="val-green">Rp 28.400.000</span>
-          </div>
-        </div>
-
-        <div class="pl-section">
-          <div class="pl-label">HARGA POKOK PRODUKSI (HPP)</div>
-          <div class="pl-row">
-            <span>Bahan Baku</span>
-            <span class="val-red">Rp 8.520.000</span>
-          </div>
-          <div class="pl-row">
-            <span>Packaging & Supplies</span>
-            <span class="val-red">Rp 1.200.000</span>
-          </div>
-          <div class="pl-row pl-subtotal">
-            <span>Total HPP</span>
-            <span class="val-red">Rp 9.720.000</span>
-          </div>
-        </div>
-
-        <div class="pl-section">
-          <div class="pl-label gross">LABA KOTOR</div>
-          <div class="pl-row gross-val">
-            <span>Pendapatan − HPP</span>
-            <span>Rp 18.680.000</span>
-          </div>
-          <div class="pl-margin">Margin: <strong>65.8%</strong></div>
-        </div>
-
-        <div class="pl-section">
-          <div class="pl-label">BIAYA OPERASIONAL</div>
-          <div class="pl-row">
-            <span>Gaji Karyawan</span>
-            <span class="val-red">Rp 3.000.000</span>
-          </div>
-          <div class="pl-row">
-            <span>Listrik & Air</span>
-            <span class="val-red">Rp 850.000</span>
-          </div>
-          <div class="pl-row">
-            <span>Sewa Tempat</span>
-            <span class="val-red">Rp 500.000</span>
-          </div>
-          <div class="pl-row">
-            <span>Marketing & Promosi</span>
-            <span class="val-red">Rp 130.000</span>
-          </div>
-          <div class="pl-row pl-subtotal">
-            <span>Total Operasional</span>
-            <span class="val-red">Rp 4.480.000</span>
-          </div>
-        </div>
-
-        <div class="pl-section net">
-          <div class="pl-row net-val">
-            <span>🎯 LABA BERSIH</span>
-            <span>Rp 14.200.000</span>
-          </div>
-          <div class="pl-margin">Net Margin: <strong>50.0%</strong></div>
-        </div>
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:20px" id="main-content">
+      <div class="table-card" id="pl-card">
+        <div class="table-header"><h3 id="pl-judul">Laporan</h3></div>
+        <p style="color:var(--text-3);font-size:13px;padding:20px 0">Memuat data...</p>
       </div>
 
-      <!-- Right column -->
       <div style="display:flex;flex-direction:column;gap:16px">
-
         <div class="chart-card">
           <div class="chart-header"><h3>Komposisi Biaya</h3></div>
           <canvas id="biayaChart" style="max-height:200px"></canvas>
         </div>
-
         <div class="chart-card">
-          <div class="chart-header"><h3>Tren Laba Bersih</h3></div>
+          <div class="chart-header"><h3>Tren Laba Bersih (6 Bulan)</h3></div>
           <canvas id="labaChart" style="max-height:160px"></canvas>
-        </div>
-
-        <div class="table-card" style="padding:20px">
-          <div class="pl-label" style="margin-bottom:12px">PERBANDINGAN BULAN LALU</div>
-          <div class="summary-row">
-            <span>Laba April 2026</span>
-            <span class="val-green">Rp 12.450.000</span>
-          </div>
-          <div class="summary-row">
-            <span>Laba Mei 2026</span>
-            <span class="val-green">Rp 14.200.000</span>
-          </div>
-          <div class="summary-row bold" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-            <span>Selisih</span>
-            <span style="color:var(--green)">↑ Rp 1.750.000 (14%)</span>
-          </div>
         </div>
       </div>
     </div>
   </main>
 
   <style>
-    .pl-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-    .pl-section:last-child { border-bottom: none; margin-bottom: 0; }
-    .pl-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--text-3); text-transform: uppercase; margin-bottom: 12px; }
-    .pl-label.gross { color: var(--green); }
-    .pl-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-2); margin-bottom: 8px; }
-    .pl-row.pl-subtotal { font-weight: 500; color: var(--text-1); margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
-    .pl-row.gross-val { font-size: 18px; font-weight: 600; color: var(--green); font-family: 'Syne', sans-serif; }
-    .pl-margin { font-size: 12px; color: var(--text-3); margin-top: 6px; }
-    .pl-section.net { background: var(--accent-dim); border-radius: var(--radius-sm); padding: 16px; border: 1px solid rgba(232,197,71,0.2); }
-    .pl-row.net-val { font-size: 20px; font-weight: 700; color: var(--accent); font-family: 'Syne', sans-serif; }
-    .pl-section.net .pl-margin { color: var(--accent); opacity: 0.7; }
+    .pl-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+    .pl-section:last-child{border-bottom:none;margin-bottom:0}
+    .pl-label{font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--text-3);text-transform:uppercase;margin-bottom:12px}
+    .pl-row{display:flex;justify-content:space-between;font-size:14px;color:var(--text-2);margin-bottom:8px}
+    .pl-row.pl-subtotal{font-weight:500;color:var(--text-1);margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
+    .pl-row.gross-val{font-size:18px;font-weight:600;color:var(--green);font-family:'Syne',sans-serif}
+    .pl-margin{font-size:12px;color:var(--text-3);margin-top:6px}
+    .pl-section.net{background:var(--accent-dim);border-radius:var(--radius-sm);padding:16px;border:1px solid rgba(232,197,71,0.2)}
+    .pl-row.net-val{font-size:20px;font-weight:700;color:var(--accent);font-family:'Syne',sans-serif}
   </style>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    Chart.defaults.color = '#8b8fa8';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
-    Chart.defaults.font.family = 'DM Sans';
+    Chart.defaults.color='#8b8fa8'; Chart.defaults.borderColor='rgba(255,255,255,0.06)'; Chart.defaults.font.family='DM Sans';
+    let biayaChart=null, labaChart=null;
 
-    new Chart(document.getElementById('biayaChart'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Bahan Baku', 'Gaji', 'Listrik & Air', 'Sewa', 'Marketing'],
-        datasets: [{
-          data: [8520000, 3000000, 850000, 500000, 130000],
-          backgroundColor: ['#e8c547','#3ecf8e','#7b8cde','#f16c50','#555975'],
-          borderWidth: 0,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 }, boxWidth: 8 } } },
-        cutout: '65%'
-      }
-    });
+    function formatRp(n){ return 'Rp '+(n||0).toLocaleString('id-ID'); }
+    function pct(a,b){ return b===0?'0%':(a/b*100).toFixed(1)+'%'; }
 
-    new Chart(document.getElementById('labaChart'), {
-      type: 'bar',
-      data: {
-        labels: ['Jan','Feb','Mar','Apr','Mei'],
-        datasets: [{
-          data: [9800000, 11200000, 10500000, 12450000, 14200000],
-          backgroundColor: 'rgba(232,197,71,0.3)',
-          borderColor: '#e8c547',
-          borderWidth: 2,
-          borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false } },
-          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { callback: v => 'Rp '+(v/1000000).toFixed(0)+'jt' } }
-        }
+    // Populate pilih bulan (6 bulan terakhir)
+    function initBulanSelect() {
+      const sel = document.getElementById('pilih-bulan');
+      const now = new Date();
+      for(let i=0;i<6;i++){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const val = d.toISOString().slice(0,7);
+        const label = d.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+        const opt = document.createElement('option');
+        opt.value=val; opt.textContent=label;
+        if(i===0) opt.selected=true;
+        sel.appendChild(opt);
       }
-    });
+      document.getElementById('periode').textContent = now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+    }
+
+    async function loadLabaRugi() {
+      const cafeId = await getCafeId();
+      const bulan = document.getElementById('pilih-bulan').value;
+      const [year,month] = bulan.split('-');
+      const firstDay = `${year}-${month}-01`;
+      const lastDay  = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
+
+      const {data} = await db.from('cashflow').select('*').eq('cafe_id',cafeId).gte('tanggal',firstDay).lte('tanggal',lastDay);
+
+      // Grouping
+      const byKat = {};
+      (data||[]).forEach(r=>{
+        if(!byKat[r.kategori]) byKat[r.kategori]={masuk:0,keluar:0};
+        if(r.jenis==='pemasukan') byKat[r.kategori].masuk+=r.nominal;
+        else byKat[r.kategori].keluar+=r.nominal;
+      });
+
+      const totalPendapatan = (data||[]).filter(r=>r.jenis==='pemasukan').reduce((s,r)=>s+r.nominal,0);
+      const hpp = (byKat['Bahan Baku']?.keluar||0) + (byKat['Packaging']?.keluar||0);
+      const labaKotor = totalPendapatan - hpp;
+      const biayaGaji = byKat['Gaji']?.keluar||0;
+      const biayaOps  = byKat['Operasional']?.keluar||0;
+      const biayaLain = byKat['Lainnya']?.keluar||0;
+      const totalOps  = biayaGaji + biayaOps + biayaLain;
+      const labaBersih = labaKotor - totalOps;
+
+      const labelBulan = new Date(firstDay).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+      document.getElementById('pl-judul').textContent = `Laporan ${labelBulan}`;
+
+      document.getElementById('pl-card').innerHTML = `
+        <div class="table-header"><h3 id="pl-judul">Laporan ${labelBulan}</h3></div>
+        <div class="pl-section">
+          <div class="pl-label">PENDAPATAN</div>
+          <div class="pl-row"><span>Penjualan Produk</span><span class="val-green">${formatRp(totalPendapatan)}</span></div>
+          <div class="pl-row pl-subtotal"><span>Total Pendapatan</span><span class="val-green">${formatRp(totalPendapatan)}</span></div>
+        </div>
+        <div class="pl-section">
+          <div class="pl-label">HARGA POKOK PRODUKSI (HPP)</div>
+          <div class="pl-row"><span>Bahan Baku</span><span class="val-red">${formatRp(byKat['Bahan Baku']?.keluar||0)}</span></div>
+          <div class="pl-row pl-subtotal"><span>Total HPP</span><span class="val-red">${formatRp(hpp)}</span></div>
+        </div>
+        <div class="pl-section">
+          <div class="pl-label">LABA KOTOR</div>
+          <div class="pl-row gross-val"><span>Pendapatan − HPP</span><span>${formatRp(labaKotor)}</span></div>
+          <div class="pl-margin">Margin: <strong>${pct(labaKotor,totalPendapatan)}</strong></div>
+        </div>
+        <div class="pl-section">
+          <div class="pl-label">BIAYA OPERASIONAL</div>
+          <div class="pl-row"><span>Gaji Karyawan</span><span class="val-red">${formatRp(biayaGaji)}</span></div>
+          <div class="pl-row"><span>Listrik, Sewa & Lainnya</span><span class="val-red">${formatRp(biayaOps+biayaLain)}</span></div>
+          <div class="pl-row pl-subtotal"><span>Total Operasional</span><span class="val-red">${formatRp(totalOps)}</span></div>
+        </div>
+        <div class="pl-section net">
+          <div class="pl-row net-val"><span>🎯 LABA BERSIH</span><span>${formatRp(labaBersih)}</span></div>
+          <div class="pl-margin">Net Margin: <strong>${pct(labaBersih,totalPendapatan)}</strong></div>
+        </div>`;
+
+      // Biaya chart
+      if(biayaChart) biayaChart.destroy();
+      biayaChart = new Chart(document.getElementById('biayaChart'),{
+        type:'doughnut',
+        data:{
+          labels:['Bahan Baku','Gaji','Operasional','Lainnya'],
+          datasets:[{data:[byKat['Bahan Baku']?.keluar||0,biayaGaji,biayaOps,biayaLain],backgroundColor:['#e8c547','#3ecf8e','#7b8cde','#555975'],borderWidth:0}]
+        },
+        options:{responsive:true,plugins:{legend:{position:'bottom',labels:{padding:12,font:{size:11},boxWidth:8}}},cutout:'65%'}
+      });
+
+      // Tren laba 6 bulan
+      await loadTrenLaba(cafeId);
+    }
+
+    async function loadTrenLaba(cafeId) {
+      const now = new Date();
+      const labels=[], labaArr=[];
+      for(let i=5;i>=0;i--){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const firstDay = d.toISOString().split('T')[0];
+        const lastDay  = new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().split('T')[0];
+        const {data} = await db.from('cashflow').select('jenis,nominal').eq('cafe_id',cafeId).gte('tanggal',firstDay).lte('tanggal',lastDay);
+        const masuk  = data?.filter(r=>r.jenis==='pemasukan').reduce((s,r)=>s+r.nominal,0)||0;
+        const keluar = data?.filter(r=>r.jenis==='pengeluaran').reduce((s,r)=>s+r.nominal,0)||0;
+        labels.push(d.toLocaleDateString('id-ID',{month:'short'}));
+        labaArr.push(masuk-keluar);
+      }
+      if(labaChart) labaChart.destroy();
+      labaChart = new Chart(document.getElementById('labaChart'),{
+        type:'bar',
+        data:{labels,datasets:[{data:labaArr,backgroundColor:'rgba(232,197,71,0.3)',borderColor:'#e8c547',borderWidth:2,borderRadius:6}]},
+        options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{callback:v=>'Rp '+(v/1000000).toFixed(0)+'jt'}}}}
+      });
+    }
+
+    initBulanSelect();
+    loadLabaRugi();
   </script>
 </body>
 </html>
