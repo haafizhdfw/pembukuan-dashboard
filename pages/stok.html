@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaféBook — Stok</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">☕</span>
+      <span class="logo-text">CaféBook</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
+      <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
+      <a href="labarugi.html" class="nav-item"><span class="nav-icon">📊</span> Laba Rugi</a>
+      <a href="kasir.html" class="nav-item"><span class="nav-icon">🧾</span> Kasir</a>
+      <a href="stok.html" class="nav-item active"><span class="nav-icon">🗂️</span> Stok</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-sub">Periode: Mei 2026</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Manajemen Stok</h1>
+        <p class="page-sub">Monitor ketersediaan bahan baku secara real-time.</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" onclick="window.location='pengadaan.html'">+ Order Bahan</button>
+      </div>
+    </header>
+
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Item Stok</div>
+        <div class="kpi-value">34 Item</div>
+        <div class="kpi-change" style="color:var(--text-3)">Semua kategori</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Stok Aman</div>
+        <div class="kpi-value" style="color:var(--green)">31 Item</div>
+        <div class="kpi-change positive">91% dari total</div>
+      </div>
+      <div class="kpi-card" style="border-color:rgba(241,108,80,0.3);background:var(--red-dim)">
+        <div class="kpi-label">Hampir Habis</div>
+        <div class="kpi-value" style="color:var(--red)">3 Item</div>
+        <div class="kpi-change negative">Perlu segera diorder</div>
+      </div>
+    </section>
+
+    <!-- Stock Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Daftar Stok Bahan</h3>
+        <input placeholder="Cari bahan..." style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-1);padding:7px 14px;font-size:13px;outline:none" />
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nama Bahan</th>
+            <th>Kategori</th>
+            <th>Stok Saat Ini</th>
+            <th>Min. Stok</th>
+            <th>Satuan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Susu Full Cream</td>
+            <td style="color:var(--text-2)">Dairy</td>
+            <td style="color:var(--red)">2</td>
+            <td style="color:var(--text-3)">5</td>
+            <td style="color:var(--text-3)">Liter</td>
+            <td><span class="badge danger">Hampir Habis</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Gula Aren</td>
+            <td style="color:var(--text-2)">Pemanis</td>
+            <td style="color:var(--orange)">500</td>
+            <td style="color:var(--text-3)">1000</td>
+            <td style="color:var(--text-3)">Gram</td>
+            <td><span class="badge pending">Menipis</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Kopi Arabica</td>
+            <td style="color:var(--text-2)">Kopi</td>
+            <td style="color:var(--orange)">300</td>
+            <td style="color:var(--text-3)">500</td>
+            <td style="color:var(--text-3)">Gram</td>
+            <td><span class="badge pending">Menipis</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Matcha Powder</td>
+            <td style="color:var(--text-2)">Powder</td>
+            <td style="color:var(--green)">800</td>
+            <td style="color:var(--text-3)">200</td>
+            <td style="color:var(--text-3)">Gram</td>
+            <td><span class="badge success">Aman</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Cup 12oz</td>
+            <td style="color:var(--text-2)">Packaging</td>
+            <td style="color:var(--green)">320</td>
+            <td style="color:var(--text-3)">100</td>
+            <td style="color:var(--text-3)">Pcs</td>
+            <td><span class="badge success">Aman</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Gula Pasir</td>
+            <td style="color:var(--text-2)">Pemanis</td>
+            <td style="color:var(--green)">3</td>
+            <td style="color:var(--text-3)">1</td>
+            <td style="color:var(--text-3)">Kg</td>
+            <td><span class="badge success">Aman</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Sirup Hazelnut</td>
+            <td style="color:var(--text-2)">Sirup</td>
+            <td style="color:var(--green)">2</td>
+            <td style="color:var(--text-3)">1</td>
+            <td style="color:var(--text-3)">Botol</td>
+            <td><span class="badge success">Aman</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-1);font-weight:500">Teh Celup</td>
+            <td style="color:var(--text-2)">Teh</td>
+            <td style="color:var(--green)">80</td>
+            <td style="color:var(--text-3)">20</td>
+            <td style="color:var(--text-3)">Pcs</td>
+            <td><span class="badge success">Aman</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+</body>
+</html>
