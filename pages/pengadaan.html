@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaféBook — Pengadaan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">☕</span>
+      <span class="logo-text">CaféBook</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="../index.html" class="nav-item">
+        <span class="nav-icon">⬛</span> Dashboard
+      </a>
+      <a href="pengadaan.html" class="nav-item active">
+        <span class="nav-icon">📦</span> Pengadaan
+      </a>
+      <a href="cashflow.html" class="nav-item">
+        <span class="nav-icon">💸</span> Cashflow
+      </a>
+      <a href="labarugi.html" class="nav-item">
+        <span class="nav-icon">📊</span> Laba Rugi
+      </a>
+      <a href="kasir.html" class="nav-item">
+        <span class="nav-icon">🧾</span> Kasir
+      </a>
+      <a href="stok.html" class="nav-item">
+        <span class="nav-icon">🗂️</span> Stok
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-sub">Periode: Mei 2026</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Pengadaan Bahan</h1>
+        <p class="page-sub">Catat pembelian bahan baku dari supplier.</p>
+      </div>
+    </header>
+
+    <!-- FORM ADD -->
+    <div class="table-card" style="margin-bottom:20px">
+      <div class="table-header"><h3>+ Tambah Pengadaan</h3></div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nama Bahan</label>
+          <input type="text" placeholder="cth: Susu Full Cream" />
+        </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <input type="text" placeholder="cth: Toko Bahan A" />
+        </div>
+        <div class="form-group">
+          <label>Jumlah</label>
+          <input type="number" placeholder="cth: 10" />
+        </div>
+        <div class="form-group">
+          <label>Satuan</label>
+          <select>
+            <option>Liter</option>
+            <option>Kilogram</option>
+            <option>Gram</option>
+            <option>Pcs</option>
+            <option>Dus</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Harga Satuan (Rp)</label>
+          <input type="number" placeholder="cth: 15000" />
+        </div>
+        <div class="form-group">
+          <label>Tanggal Beli</label>
+          <input type="date" />
+        </div>
+        <div class="form-group span-2" style="flex-direction:row;align-items:flex-end;gap:12px">
+          <button class="btn-primary" style="padding:10px 28px">Simpan</button>
+          <button class="btn-outline" style="padding:10px 28px">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Riwayat Pengadaan — Mei 2026</h3>
+        <span style="font-size:13px;color:var(--text-3)">Total: Rp 4.850.000</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Bahan</th>
+            <th>Supplier</th>
+            <th>Jumlah</th>
+            <th>Harga Satuan</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>16 Mei</td>
+            <td style="color:var(--text-1)">Susu Full Cream</td>
+            <td>Toko Bahan A</td>
+            <td>20 Liter</td>
+            <td>Rp 15.000</td>
+            <td style="color:var(--text-1);font-weight:500">Rp 300.000</td>
+          </tr>
+          <tr>
+            <td>15 Mei</td>
+            <td style="color:var(--text-1)">Kopi Arabica</td>
+            <td>Roaster B</td>
+            <td>2 Kg</td>
+            <td>Rp 120.000</td>
+            <td style="color:var(--text-1);font-weight:500">Rp 240.000</td>
+          </tr>
+          <tr>
+            <td>14 Mei</td>
+            <td style="color:var(--text-1)">Gula Aren</td>
+            <td>Pasar Tradisional</td>
+            <td>5 Kg</td>
+            <td>Rp 22.000</td>
+            <td style="color:var(--text-1);font-weight:500">Rp 110.000</td>
+          </tr>
+          <tr>
+            <td>13 Mei</td>
+            <td style="color:var(--text-1)">Matcha Powder</td>
+            <td>Supplier Online</td>
+            <td>500 Gram</td>
+            <td>Rp 180.000</td>
+            <td style="color:var(--text-1);font-weight:500">Rp 90.000</td>
+          </tr>
+          <tr>
+            <td>12 Mei</td>
+            <td style="color:var(--text-1)">Cup 12oz</td>
+            <td>Toko Packaging</td>
+            <td>500 Pcs</td>
+            <td>Rp 800</td>
+            <td style="color:var(--text-1);font-weight:500">Rp 400.000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+</body>
+</html>
