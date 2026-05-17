@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaféBook — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">☕</span>
+      <span class="logo-text">CaféBook</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="nav-item active">
+        <span class="nav-icon">⬛</span> Dashboard
+      </a>
+      <a href="pages/pengadaan.html" class="nav-item">
+        <span class="nav-icon">📦</span> Pengadaan
+      </a>
+      <a href="pages/cashflow.html" class="nav-item">
+        <span class="nav-icon">💸</span> Cashflow
+      </a>
+      <a href="pages/labarugi.html" class="nav-item">
+        <span class="nav-icon">📊</span> Laba Rugi
+      </a>
+      <a href="pages/kasir.html" class="nav-item">
+        <span class="nav-icon">🧾</span> Kasir
+      </a>
+      <a href="pages/stok.html" class="nav-item">
+        <span class="nav-icon">🗂️</span> Stok
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-sub">Periode: Mei 2026</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Selamat datang kembali, semua berjalan baik hari ini.</p>
+      </div>
+      <div class="topbar-right">
+        <span class="date-badge">17 Mei 2026</span>
+        <button class="btn-primary" onclick="window.location='pages/kasir.html'">+ Transaksi</button>
+      </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Omzet Hari Ini</div>
+        <div class="kpi-value">Rp 1.240.000</div>
+        <div class="kpi-change positive">↑ 12% dari kemarin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pengeluaran Hari Ini</div>
+        <div class="kpi-value">Rp 480.000</div>
+        <div class="kpi-change negative">↑ 5% dari kemarin</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Laba Bersih Hari Ini</div>
+        <div class="kpi-value">Rp 760.000</div>
+        <div class="kpi-change positive">↑ 18% dari kemarin</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Stok Bahan</div>
+        <div class="kpi-value">34 Item</div>
+        <div class="kpi-change warning">⚠ 3 item hampir habis</div>
+      </div>
+    </section>
+
+    <!-- CHARTS ROW -->
+    <section class="charts-row">
+      <div class="chart-card wide">
+        <div class="chart-header">
+          <h3>Cashflow Minggu Ini</h3>
+          <div class="chart-legend">
+            <span class="leg-in">● Pemasukan</span>
+            <span class="leg-out">● Pengeluaran</span>
+          </div>
+        </div>
+        <canvas id="cashflowChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><h3>Menu Terlaris</h3></div>
+        <canvas id="menuChart"></canvas>
+      </div>
+    </section>
+
+    <!-- BOTTOM ROW -->
+    <section class="bottom-row">
+
+      <!-- Recent Transactions -->
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Transaksi Terbaru</h3>
+          <a href="pages/kasir.html" class="link-more">Lihat semua →</a>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Item</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>14:32</td>
+              <td>Kopi Susu x2, Roti Bakar x1</td>
+              <td>Rp 65.000</td>
+              <td><span class="badge success">Lunas</span></td>
+            </tr>
+            <tr>
+              <td>13:15</td>
+              <td>Matcha Latte x1</td>
+              <td>Rp 35.000</td>
+              <td><span class="badge success">Lunas</span></td>
+            </tr>
+            <tr>
+              <td>12:47</td>
+              <td>Es Kopi x3, Pisang Goreng x2</td>
+              <td>Rp 95.000</td>
+              <td><span class="badge success">Lunas</span></td>
+            </tr>
+            <tr>
+              <td>11:20</td>
+              <td>Americano x1, Croissant x1</td>
+              <td>Rp 58.000</td>
+              <td><span class="badge success">Lunas</span></td>
+            </tr>
+            <tr>
+              <td>10:05</td>
+              <td>Kopi Susu x4</td>
+              <td>Rp 100.000</td>
+              <td><span class="badge success">Lunas</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Stok Alert -->
+      <div class="alert-card">
+        <div class="table-header">
+          <h3>⚠ Stok Hampir Habis</h3>
+          <a href="pages/stok.html" class="link-more">Kelola stok →</a>
+        </div>
+        <ul class="alert-list">
+          <li class="alert-item">
+            <div class="alert-name">Susu Full Cream</div>
+            <div class="alert-qty danger">Sisa 2 liter</div>
+          </li>
+          <li class="alert-item">
+            <div class="alert-name">Gula Aren</div>
+            <div class="alert-qty warning">Sisa 500 gram</div>
+          </li>
+          <li class="alert-item">
+            <div class="alert-name">Kopi Arabica</div>
+            <div class="alert-qty warning">Sisa 300 gram</div>
+          </li>
+        </ul>
+        <button class="btn-outline full-w" onclick="window.location='pages/pengadaan.html'">+ Order Bahan</button>
+
+        <div class="summary-block">
+          <h4>Ringkasan Bulan Ini</h4>
+          <div class="summary-row">
+            <span>Total Pemasukan</span>
+            <span class="val-green">Rp 28.400.000</span>
+          </div>
+          <div class="summary-row">
+            <span>Total Pengeluaran</span>
+            <span class="val-red">Rp 14.200.000</span>
+          </div>
+          <div class="summary-row bold">
+            <span>Laba Bersih</span>
+            <span class="val-green">Rp 14.200.000</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
