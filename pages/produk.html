@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaféBook — Produk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <nav class="sidebar-nav">
+      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="produk.html" class="nav-item active"><span class="nav-icon">🍽️</span> Produk</a>
+      <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
+      <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
+      <a href="labarugi.html" class="nav-item"><span class="nav-icon">📊</span> Laba Rugi</a>
+      <a href="kasir.html" class="nav-item"><span class="nav-icon">🧾</span> Kasir</a>
+      <a href="stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-sub">Menu & Produk</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Manajemen Produk</h1>
+        <p class="page-sub">Tambah dan kelola menu yang tampil di kasir.</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" onclick="openModal()">+ Tambah Produk</button>
+      </div>
+    </header>
+
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Produk</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Produk Aktif</div>
+        <div class="kpi-value" id="kpi-aktif" style="color:var(--green)">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Produk Nonaktif</div>
+        <div class="kpi-value" id="kpi-nonaktif" style="color:var(--text-3)">—</div>
+      </div>
+    </section>
+
+    <!-- FILTER -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center">
+      <input id="searchProduk" placeholder="Cari produk..." oninput="filterProduk(this.value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text-1);padding:9px 16px;font-size:13px;outline:none;flex:1;max-width:300px" />
+      <select id="filterKat" onchange="filterProduk(document.getElementById('searchProduk').value)" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text-2);padding:9px 14px;font-size:13px">
+        <option value="">Semua Kategori</option>
+        <option>Kopi</option>
+        <option>Non-Kopi</option>
+        <option>Makanan</option>
+        <option>Minuman</option>
+        <option>Snack</option>
+      </select>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <button onclick="setView('grid')" id="btn-grid" class="btn-primary" style="padding:8px 14px;font-size:13px">▦ Grid</button>
+        <button onclick="setView('list')" id="btn-list" class="btn-outline" style="padding:8px 14px;font-size:13px">☰ List</button>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div id="view-grid">
+      <div id="produkGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">
+        <p style="color:var(--text-3);font-size:13px">Memuat produk...</p>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="view-list" style="display:none">
+      <div class="table-card">
+        <table class="data-table">
+          <thead><tr><th>Emoji</th><th>Nama Produk</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="produkList">
+            <tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:24px">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL TAMBAH/EDIT -->
+  <div id="produkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:480px;max-width:95vw">
+      <h3 style="font-family:'Syne',sans-serif;font-size:18px;margin-bottom:4px" id="modal-title">Tambah Produk</h3>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:24px">Produk yang ditambah langsung muncul di halaman Kasir.</p>
+
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Nama Produk</label>
+          <input id="f-nama" type="text" placeholder="cth: Kopi Susu Gula Aren" />
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="f-kat">
+            <option>Kopi</option>
+            <option>Non-Kopi</option>
+            <option>Makanan</option>
+            <option>Minuman</option>
+            <option>Snack</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Harga (Rp)</label>
+          <input id="f-harga" type="number" placeholder="cth: 25000" />
+        </div>
+        <div class="form-group">
+          <label>Emoji / Icon</label>
+          <input id="f-emoji" type="text" placeholder="cth: ☕" maxlength="4" style="font-size:20px" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="f-aktif">
+            <option value="true">Aktif (tampil di kasir)</option>
+            <option value="false">Nonaktif (sembunyikan)</option>
+          </select>
+        </div>
+        <div class="form-group span-2" style="flex-direction:row;gap:10px;margin-top:8px">
+          <button class="btn-primary" id="btn-simpan" style="flex:1" onclick="simpanProduk()">Simpan</button>
+          <button class="btn-outline" style="flex:1" onclick="closeModal()">Batal</button>
+        </div>
+        <div class="form-group span-2">
+          <span id="form-msg" style="font-size:13px;color:var(--green);display:none">✅ Berhasil disimpan!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .produk-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+      transition: transform 0.15s, border-color 0.15s;
+      position: relative;
+    }
+    .produk-card:hover { transform: translateY(-2px); border-color: rgba(232,197,71,0.3); }
+    .produk-card.nonaktif { opacity: 0.45; }
+    .produk-emoji { font-size: 36px; }
+    .produk-nama { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .produk-kat { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .produk-harga { font-size: 15px; font-weight: 500; color: var(--accent); margin-top: 4px; }
+    .produk-actions { display: flex; gap: 6px; margin-top: 8px; width: 100%; }
+    .produk-actions button { flex: 1; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); }
+    .btn-edit { background: var(--surface-2); color: var(--text-2); }
+    .btn-edit:hover { color: var(--accent); border-color: var(--accent); }
+    .btn-toggle-on  { background: rgba(62,207,142,0.1); color: var(--green); }
+    .btn-toggle-off { background: rgba(241,108,80,0.1); color: var(--red); }
+    .produk-status {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 10px; font-weight: 600; padding: 3px 8px;
+      border-radius: 20px; letter-spacing: 0.04em;
+    }
+    .status-aktif { background: rgba(62,207,142,0.15); color: var(--green); }
+    .status-nonaktif { background: rgba(85,89,117,0.3); color: var(--text-3); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    let allProduk = [];
+    let editId = null;
+    let currentView = 'grid';
+
+    function formatRp(n){ return 'Rp '+(n||0).toLocaleString('id-ID'); }
+
+    function setView(v) {
+      currentView = v;
+      document.getElementById('view-grid').style.display = v==='grid'?'block':'none';
+      document.getElementById('view-list').style.display = v==='list'?'block':'none';
+      document.getElementById('btn-grid').className = v==='grid'?'btn-primary':'btn-outline';
+      document.getElementById('btn-list').className = v==='list'?'btn-primary':'btn-outline';
+      document.getElementById('btn-grid').style.padding='8px 14px';
+      document.getElementById('btn-grid').style.fontSize='13px';
+      document.getElementById('btn-list').style.padding='8px 14px';
+      document.getElementById('btn-list').style.fontSize='13px';
+    }
+
+    async function loadProduk() {
+      const cafeId = await getCafeId();
+      const {data} = await db.from('menu').select('*').eq('cafe_id', cafeId).order('nama');
+      allProduk = data || [];
+      renderAll(allProduk);
+      updateKPI(allProduk);
+    }
+
+    function updateKPI(data) {
+      document.getElementById('kpi-total').textContent   = data.length+' Produk';
+      document.getElementById('kpi-aktif').textContent   = data.filter(p=>p.aktif).length+' Produk';
+      document.getElementById('kpi-nonaktif').textContent= data.filter(p=>!p.aktif).length+' Produk';
+    }
+
+    function filterProduk(q) {
+      const kat = document.getElementById('filterKat').value;
+      let filtered = allProduk;
+      if(q) filtered = filtered.filter(p=>p.nama.toLowerCase().includes(q.toLowerCase()));
+      if(kat) filtered = filtered.filter(p=>p.kategori===kat);
+      renderAll(filtered);
+    }
+
+    function renderAll(data) {
+      renderGrid(data);
+      renderList(data);
+    }
+
+    function renderGrid(data) {
+      const grid = document.getElementById('produkGrid');
+      if(!data.length){ grid.innerHTML='<p style="color:var(--text-3);font-size:13px;padding:20px 0">Tidak ada produk ditemukan.</p>'; return; }
+      grid.innerHTML = data.map(p=>`
+        <div class="produk-card ${p.aktif?'':'nonaktif'}">
+          <span class="produk-status ${p.aktif?'status-aktif':'status-nonaktif'}">${p.aktif?'Aktif':'Nonaktif'}</span>
+          <div class="produk-emoji">${p.emoji||'☕'}</div>
+          <div class="produk-nama">${p.nama}</div>
+          <div class="produk-kat">${p.kategori||'—'}</div>
+          <div class="produk-harga">${formatRp(p.harga)}</div>
+          <div class="produk-actions">
+            <button class="btn-edit" onclick="openEdit('${p.id}')">✏ Edit</button>
+            <button class="${p.aktif?'btn-toggle-off':'btn-toggle-on'}" onclick="toggleAktif('${p.id}',${p.aktif})">
+              ${p.aktif?'🙈 Nonaktif':'👁 Aktifkan'}
+            </button>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderList(data) {
+      const tbody = document.getElementById('produkList');
+      if(!data.length){ tbody.innerHTML='<tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:24px">Tidak ada produk.</td></tr>'; return; }
+      tbody.innerHTML = data.map(p=>`
+        <tr>
+          <td style="font-size:22px">${p.emoji||'☕'}</td>
+          <td style="color:var(--text-1);font-weight:500">${p.nama}</td>
+          <td style="color:var(--text-2)">${p.kategori||'—'}</td>
+          <td style="color:var(--accent);font-weight:500">${formatRp(p.harga)}</td>
+          <td>${p.aktif?'<span class="badge success">Aktif</span>':'<span class="badge" style="background:rgba(85,89,117,0.3);color:var(--text-3)">Nonaktif</span>'}</td>
+          <td style="display:flex;gap:6px">
+            <button onclick="openEdit('${p.id}')" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">Edit</button>
+            <button onclick="toggleAktif('${p.id}',${p.aktif})" style="background:${p.aktif?'rgba(241,108,80,0.1)':'rgba(62,207,142,0.1)'};border:1px solid var(--border);color:${p.aktif?'var(--red)':'var(--green)'};padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">${p.aktif?'Nonaktif':'Aktifkan'}</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function openModal() {
+      editId = null;
+      document.getElementById('modal-title').textContent = 'Tambah Produk Baru';
+      document.getElementById('f-nama').value='';
+      document.getElementById('f-harga').value='';
+      document.getElementById('f-emoji').value='☕';
+      document.getElementById('f-aktif').value='true';
+      document.getElementById('produkModal').style.display='flex';
+    }
+
+    function openEdit(id) {
+      const p = allProduk.find(x=>x.id===id);
+      if(!p) return;
+      editId = id;
+      document.getElementById('modal-title').textContent = 'Edit Produk';
+      document.getElementById('f-nama').value  = p.nama;
+      document.getElementById('f-harga').value = p.harga;
+      document.getElementById('f-emoji').value = p.emoji||'☕';
+      document.getElementById('f-kat').value   = p.kategori||'Kopi';
+      document.getElementById('f-aktif').value = p.aktif?'true':'false';
+      document.getElementById('produkModal').style.display='flex';
+    }
+
+    function closeModal() {
+      document.getElementById('produkModal').style.display='none';
+      document.getElementById('form-msg').style.display='none';
+      editId=null;
+    }
+
+    async function simpanProduk() {
+      const nama  = document.getElementById('f-nama').value.trim();
+      const harga = parseInt(document.getElementById('f-harga').value);
+      const emoji = document.getElementById('f-emoji').value.trim()||'☕';
+      const kat   = document.getElementById('f-kat').value;
+      const aktif = document.getElementById('f-aktif').value==='true';
+
+      if(!nama||!harga){ alert('Nama dan harga wajib diisi.'); return; }
+
+      const btn = document.getElementById('btn-simpan');
+      btn.textContent='Menyimpan...'; btn.disabled=true;
+
+      const cafeId = await getCafeId();
+      let error;
+
+      if(editId) {
+        ({error} = await db.from('menu').update({nama,harga,emoji,kategori:kat,aktif}).eq('id',editId));
+      } else {
+        ({error} = await db.from('menu').insert({cafe_id:cafeId,nama,harga,emoji,kategori:kat,aktif}));
+      }
+
+      btn.textContent='Simpan'; btn.disabled=false;
+      if(error){ alert('Gagal: '+error.message); return; }
+
+      const msg=document.getElementById('form-msg');
+      msg.style.display='inline';
+      setTimeout(()=>{ msg.style.display='none'; closeModal(); },1200);
+
+      await loadProduk();
+    }
+
+    async function toggleAktif(id, currentStatus) {
+      const {error} = await db.from('menu').update({aktif:!currentStatus}).eq('id',id);
+      if(error){ alert('Gagal: '+error.message); return; }
+      await loadProduk();
+    }
+
+    loadProduk();
+  </script>
+</body>
+</html>
