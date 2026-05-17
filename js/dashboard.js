@@ -3,79 +3,165 @@ Chart.defaults.color = '#8b8fa8';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 Chart.defaults.font.family = 'DM Sans';
 
+// ── Init ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadKPI();
+  await loadCashflowChart();
+  await loadMenuChart();
+  await loadRecentTransaksi();
+  await loadStokAlert();
+});
+
+// ── KPI Cards ───────────────────────────────────────────────
+async function loadKPI() {
+  const cafeId = await getCafeId();
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: cfToday } = await db
+    .from('cashflow')
+    .select('jenis, nominal')
+    .eq('cafe_id', cafeId)
+    .eq('tanggal', today);
+
+  const pemasukan = cfToday?.filter(r => r.jenis === 'pemasukan').reduce((s, r) => s + r.nominal, 0) || 0;
+  const pengeluaran = cfToday?.filter(r => r.jenis === 'pengeluaran').reduce((s, r) => s + r.nominal, 0) || 0;
+  const laba = pemasukan - pengeluaran;
+
+  document.getElementById('kpi-omzet').textContent = formatRp(pemasukan);
+  document.getElementById('kpi-pengeluaran').textContent = formatRp(pengeluaran);
+  document.getElementById('kpi-laba').textContent = formatRp(laba);
+
+  const { data: stokData } = await db.from('stok').select('stok_saat_ini, stok_minimum').eq('cafe_id', cafeId);
+  const alertCount = stokData?.filter(s => s.stok_saat_ini <= s.stok_minimum).length || 0;
+  document.getElementById('kpi-stok-alert').textContent = `⚠ ${alertCount} item hampir habis`;
+}
+
 // ── Cashflow Chart ──────────────────────────────────────────
-const cashflowCtx = document.getElementById('cashflowChart');
-if (cashflowCtx) {
-  new Chart(cashflowCtx, {
+async function loadCashflowChart() {
+  const cafeId = await getCafeId();
+  const dayLabels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const days = [];
+  const pemasukanArr = [];
+  const pengeluaranArr = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+
+  for (const day of days) {
+    const { data } = await db.from('cashflow').select('jenis, nominal').eq('cafe_id', cafeId).eq('tanggal', day);
+    pemasukanArr.push(data?.filter(r => r.jenis === 'pemasukan').reduce((s, r) => s + r.nominal, 0) || 0);
+    pengeluaranArr.push(data?.filter(r => r.jenis === 'pengeluaran').reduce((s, r) => s + r.nominal, 0) || 0);
+  }
+
+  const ctx = document.getElementById('cashflowChart');
+  if (!ctx) return;
+
+  new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+      labels: days.map(d => dayLabels[new Date(d).getDay()]),
       datasets: [
-        {
-          label: 'Pemasukan',
-          data: [980000, 1150000, 870000, 1320000, 1080000, 1540000, 1240000],
-          backgroundColor: 'rgba(62,207,142,0.25)',
-          borderColor: '#3ecf8e',
-          borderWidth: 2,
-          borderRadius: 6,
-        },
-        {
-          label: 'Pengeluaran',
-          data: [420000, 580000, 390000, 670000, 450000, 720000, 480000],
-          backgroundColor: 'rgba(241,108,80,0.2)',
-          borderColor: '#f16c50',
-          borderWidth: 2,
-          borderRadius: 6,
-        }
+        { label: 'Pemasukan', data: pemasukanArr, backgroundColor: 'rgba(62,207,142,0.25)', borderColor: '#3ecf8e', borderWidth: 2, borderRadius: 6 },
+        { label: 'Pengeluaran', data: pengeluaranArr, backgroundColor: 'rgba(241,108,80,0.2)', borderColor: '#f16c50', borderWidth: 2, borderRadius: 6 }
       ]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: {
-            callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'jt'
-          }
-        }
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'jt' } }
       }
     }
   });
 }
 
 // ── Menu Chart ──────────────────────────────────────────────
-const menuCtx = document.getElementById('menuChart');
-if (menuCtx) {
-  new Chart(menuCtx, {
+async function loadMenuChart() {
+  const cafeId = await getCafeId();
+  const { data: transaksiData } = await db.from('transaksi').select('items').eq('cafe_id', cafeId);
+
+  const counts = {};
+  transaksiData?.forEach(t => {
+    t.items?.forEach(item => { counts[item.nama] = (counts[item.nama] || 0) + item.qty; });
+  });
+
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const finalLabels = sorted.length ? sorted.map(([n]) => n) : ['Kopi Susu','Es Kopi','Matcha Latte','Americano','Lainnya'];
+  const finalData = sorted.length ? sorted.map(([,q]) => q) : [38,24,17,12,9];
+
+  const ctx = document.getElementById('menuChart');
+  if (!ctx) return;
+
+  new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Kopi Susu', 'Es Kopi', 'Matcha Latte', 'Americano', 'Lainnya'],
-      datasets: [{
-        data: [38, 24, 17, 12, 9],
-        backgroundColor: [
-          '#e8c547',
-          '#3ecf8e',
-          '#7b8cde',
-          '#f16c50',
-          '#555975'
-        ],
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
+      labels: finalLabels,
+      datasets: [{ data: finalData, backgroundColor: ['#e8c547','#3ecf8e','#7b8cde','#f16c50','#555975'], borderWidth: 0, hoverOffset: 6 }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { padding: 16, font: { size: 12 }, boxWidth: 10 }
-        }
-      },
+      plugins: { legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 }, boxWidth: 10 } } },
       cutout: '68%'
     }
   });
+}
+
+// ── Recent Transaksi ────────────────────────────────────────
+async function loadRecentTransaksi() {
+  const cafeId = await getCafeId();
+  const { data } = await db.from('transaksi').select('*').eq('cafe_id', cafeId).order('created_at', { ascending: false }).limit(5);
+
+  const tbody = document.getElementById('tbody-transaksi');
+  if (!tbody) return;
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:20px">Belum ada transaksi</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(t => {
+    const time = new Date(t.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const itemDesc = t.items?.map(i => `${i.nama} x${i.qty}`).join(', ') || '-';
+    return `<tr><td>${time}</td><td>${itemDesc}</td><td>${formatRp(t.total)}</td><td><span class="badge success">Lunas</span></td></tr>`;
+  }).join('');
+}
+
+// ── Stok Alert ──────────────────────────────────────────────
+async function loadStokAlert() {
+  const cafeId = await getCafeId();
+  const { data } = await db.from('stok').select('*').eq('cafe_id', cafeId).order('stok_saat_ini', { ascending: true });
+
+  const alertList = document.getElementById('stok-alert-list');
+  if (!alertList || !data) return;
+
+  const lowStock = data.filter(s => parseFloat(s.stok_saat_ini) <= parseFloat(s.stok_minimum));
+
+  alertList.innerHTML = lowStock.length === 0
+    ? '<li style="color:var(--green);font-size:13px;padding:10px 0">✅ Semua stok aman</li>'
+    : lowStock.map(s => {
+        const isDanger = parseFloat(s.stok_saat_ini) <= parseFloat(s.stok_minimum) / 2;
+        return `<li class="alert-item"><div class="alert-name">${s.nama_bahan}</div><div class="alert-qty ${isDanger ? 'danger' : 'warning'}">Sisa ${s.stok_saat_ini} ${s.satuan}</div></li>`;
+      }).join('');
+
+  // Monthly summary
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  const { data: cf } = await db.from('cashflow').select('jenis, nominal').eq('cafe_id', cafeId).gte('tanggal', firstDay).lte('tanggal', lastDay);
+  const totalMasuk = cf?.filter(r => r.jenis === 'pemasukan').reduce((s, r) => s + r.nominal, 0) || 0;
+  const totalKeluar = cf?.filter(r => r.jenis === 'pengeluaran').reduce((s, r) => s + r.nominal, 0) || 0;
+
+  const el = (id) => document.getElementById(id);
+  if (el('summary-masuk')) el('summary-masuk').textContent = formatRp(totalMasuk);
+  if (el('summary-keluar')) el('summary-keluar').textContent = formatRp(totalKeluar);
+  if (el('summary-laba')) el('summary-laba').textContent = formatRp(totalMasuk - totalKeluar);
+}
+
+// ── Helper ──────────────────────────────────────────────────
+function formatRp(num) {
+  return 'Rp ' + (num || 0).toLocaleString('id-ID');
 }
