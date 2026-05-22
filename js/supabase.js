@@ -8,8 +8,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Helper: ambil cafe_id pertama (untuk sekarang single-cafe dulu)
+// Helper: ambil cafe_id dengan cache — query ke Supabase hanya sekali per sesi
+let _cafeIdCache = null;
 async function getCafeId() {
+  if (_cafeIdCache) return _cafeIdCache;
   const { data } = await db.from('cafe').select('id').limit(1).single();
-  return data?.id;
+  _cafeIdCache = data?.id;
+  return _cafeIdCache;
 }
