@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CaféBook — Pengadaan</title>
+  <title>PantauCuan — Pengadaan</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
     <nav class="sidebar-nav">
-      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
       <a href="pengadaan.html" class="nav-item active"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
@@ -21,7 +29,7 @@
       <a href="stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
     </nav>
     <div class="sidebar-footer">
-      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
       <div class="cafe-sub">Periode: <span id="periode"></span></div>
     </div>
   </aside>
@@ -29,13 +37,19 @@
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 class="page-title">Pengadaan Bahan</h1>
-        <p class="page-sub">Catat pembelian bahan baku dari supplier.</p>
+        <h1 class="page-title">Pengadaan <span class="amber-dot"></span></h1>
+        <p class="page-sub">Catat pembelian bahan baku — otomatis update stok & cashflow.</p>
       </div>
     </header>
 
-    <div class="table-card" style="margin-bottom:20px">
-      <div class="table-header"><h3>+ Tambah Pengadaan</h3></div>
+    <!-- FORM PENGADAAN -->
+    <div class="table-card" style="margin-bottom:16px">
+      <div class="table-header">
+        <h3>+ Tambah Pengadaan</h3>
+        <span style="font-size:12px;color:var(--text-3);font-weight:500">
+          ✅ Auto-update stok & cashflow
+        </span>
+      </div>
       <div class="form-grid">
         <div class="form-group">
           <label>Nama Bahan</label>
@@ -47,7 +61,7 @@
         </div>
         <div class="form-group">
           <label>Jumlah</label>
-          <input id="f-jumlah" type="number" placeholder="cth: 10" />
+          <input id="f-jumlah" type="number" placeholder="cth: 10" min="0" />
         </div>
         <div class="form-group">
           <label>Satuan</label>
@@ -62,28 +76,45 @@
         </div>
         <div class="form-group">
           <label>Harga Satuan (Rp)</label>
-          <input id="f-harga" type="number" placeholder="cth: 15000" />
+          <input id="f-harga" type="number" placeholder="cth: 15000" min="0" />
         </div>
         <div class="form-group">
           <label>Tanggal Beli</label>
           <input id="f-tanggal" type="date" />
         </div>
-        <div class="form-group span-2" style="flex-direction:row;align-items:flex-end;gap:12px">
+
+        <!-- PREVIEW TOTAL -->
+        <div class="form-group span-2">
+          <div id="preview-total" style="display:none;background:var(--accent-dim);border:1px solid var(--border-2);border-radius:var(--radius-sm);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;color:var(--text-2)">Total Pembelian</span>
+            <span id="preview-nominal" style="font-size:16px;font-weight:700;color:var(--accent)">Rp 0</span>
+          </div>
+        </div>
+
+        <div class="form-group span-2" style="flex-direction:row;align-items:center;gap:12px;margin-top:4px">
           <button class="btn-primary" id="btn-simpan" style="padding:10px 28px" onclick="simpanPengadaan()">Simpan</button>
           <button class="btn-outline" style="padding:10px 28px" onclick="resetForm()">Reset</button>
-          <span id="form-msg" style="font-size:13px;color:var(--green);display:none">✅ Berhasil disimpan!</span>
+          <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500"></span>
         </div>
       </div>
     </div>
 
+    <!-- RIWAYAT TABLE -->
     <div class="table-card">
       <div class="table-header">
         <h3 id="tabel-judul">Riwayat Pengadaan</h3>
-        <span id="tabel-total" style="font-size:13px;color:var(--text-3)">—</span>
+        <span id="tabel-total" style="font-size:13px;color:var(--text-3);font-weight:500">—</span>
       </div>
       <table class="data-table">
         <thead>
-          <tr><th>Tanggal</th><th>Bahan</th><th>Supplier</th><th>Jumlah</th><th>Harga Satuan</th><th>Total</th></tr>
+          <tr>
+            <th>Tanggal</th>
+            <th>Bahan</th>
+            <th>Supplier</th>
+            <th>Jumlah</th>
+            <th>Harga Satuan</th>
+            <th>Total</th>
+          </tr>
         </thead>
         <tbody id="tbody-pengadaan">
           <tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:24px">Memuat data...</td></tr>
@@ -96,14 +127,33 @@
   <script src="../js/supabase.js"></script>
   <script>
     const now = new Date();
-    document.getElementById('periode').textContent = now.toLocaleDateString('id-ID', {month:'long',year:'numeric'});
+    document.getElementById('periode').textContent  = now.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
     document.getElementById('f-tanggal').value = now.toISOString().split('T')[0];
 
+    // Nama cafe
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
+
     function formatRp(num) { return 'Rp ' + (num||0).toLocaleString('id-ID'); }
-    function formatTgl(d) { return new Date(d).toLocaleDateString('id-ID', {day:'numeric',month:'short'}); }
+    function formatTgl(d)  { return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'}); }
+
+    // Live preview total
+    function updatePreview() {
+      const jumlah = parseFloat(document.getElementById('f-jumlah').value) || 0;
+      const harga  = parseInt(document.getElementById('f-harga').value)   || 0;
+      const total  = jumlah * harga;
+      const box    = document.getElementById('preview-total');
+      box.style.display = (jumlah > 0 && harga > 0) ? 'flex' : 'none';
+      document.getElementById('preview-nominal').textContent = formatRp(total);
+    }
+
+    document.getElementById('f-jumlah').addEventListener('input', updatePreview);
+    document.getElementById('f-harga').addEventListener('input', updatePreview);
 
     async function loadPengadaan() {
-      const cafeId = await getCafeId();
+      const cafeId   = await getCafeId();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
       const lastDay  = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().split('T')[0];
 
@@ -112,24 +162,29 @@
         .order('tanggal', { ascending: false });
 
       const tbody = document.getElementById('tbody-pengadaan');
-      if (error) { tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:24px">Error: ${error.message}</td></tr>`; return; }
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:24px">Error: ${error.message}</td></tr>`;
+        return;
+      }
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:24px">Belum ada data pengadaan bulan ini.</td></tr>';
-        document.getElementById('tabel-total').textContent = 'Total: Rp 0'; return;
+        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:32px">Belum ada data pengadaan bulan ini.</td></tr>';
+        document.getElementById('tabel-total').textContent = 'Total: Rp 0';
+        return;
       }
 
-      const grandTotal = data.reduce((s,r) => s + (r.total||0), 0);
-      document.getElementById('tabel-total').textContent = 'Total: ' + formatRp(grandTotal);
-      document.getElementById('tabel-judul').textContent = `Riwayat Pengadaan — ${now.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}`;
+      const grandTotal = data.reduce((s, r) => s + (r.total||0), 0);
+      document.getElementById('tabel-total').textContent  = 'Total: ' + formatRp(grandTotal);
+      document.getElementById('tabel-judul').textContent = `Riwayat Pengadaan — ${now.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}`;
 
       tbody.innerHTML = data.map(r => `
         <tr>
-          <td>${formatTgl(r.tanggal)}</td>
-          <td style="color:var(--text-1);font-weight:500">${r.nama_bahan}</td>
-          <td>${r.supplier||'—'}</td>
-          <td>${r.jumlah} ${r.satuan}</td>
-          <td>${formatRp(r.harga_satuan)}</td>
-          <td style="color:var(--text-1);font-weight:500">${formatRp(r.total)}</td>
+          <td style="white-space:nowrap">${formatTgl(r.tanggal)}</td>
+          <td style="color:var(--text-1);font-weight:600">${r.nama_bahan}</td>
+          <td style="color:var(--text-2)">${r.supplier || '—'}</td>
+          <td style="color:var(--text-2)">${r.jumlah} ${r.satuan}</td>
+          <td style="color:var(--text-2)">${formatRp(r.harga_satuan)}</td>
+          <td style="color:var(--accent);font-weight:600">${formatRp(r.total)}</td>
         </tr>`).join('');
     }
 
@@ -141,50 +196,58 @@
       const harga   = parseInt(document.getElementById('f-harga').value);
       const tanggal = document.getElementById('f-tanggal').value;
 
-      if (!bahan || !jumlah || !harga || !tanggal) { alert('Lengkapi dulu: Nama Bahan, Jumlah, Harga, dan Tanggal.'); return; }
+      if (!bahan || !jumlah || !harga || !tanggal) {
+        alert('Lengkapi dulu: Nama Bahan, Jumlah, Harga, dan Tanggal.');
+        return;
+      }
 
       const btn = document.getElementById('btn-simpan');
       btn.textContent = 'Menyimpan...'; btn.disabled = true;
 
-      const cafeId = await getCafeId();
+      const cafeId       = await getCafeId();
       const totalNominal = jumlah * harga;
 
-      // 1. Simpan ke pengadaan (total tidak dikirim — generated column otomatis)
+      // 1. Simpan ke pengadaan (total = generated column, tidak perlu dikirim)
       const { error: errPengadaan } = await db.from('pengadaan').insert({
-        cafe_id: cafeId, nama_bahan: bahan, supplier: supplier||null,
+        cafe_id: cafeId, nama_bahan: bahan,
+        supplier: supplier || null,
         jumlah, satuan, harga_satuan: harga, tanggal
       });
 
       btn.textContent = 'Simpan'; btn.disabled = false;
+
       if (errPengadaan) { alert('Gagal simpan: ' + errPengadaan.message); return; }
 
-      // 2. Auto-catat ke cashflow sebagai pengeluaran Bahan Baku
+      // 2. Auto-catat ke cashflow
       await db.from('cashflow').insert({
         cafe_id: cafeId,
         keterangan: `Pengadaan: ${bahan}${supplier ? ' dari ' + supplier : ''}`,
-        jenis: 'pengeluaran',
-        kategori: 'Bahan Baku',
-        nominal: totalNominal,
-        tanggal
+        jenis: 'pengeluaran', kategori: 'Bahan Baku',
+        nominal: totalNominal, tanggal
       });
 
       // 3. Auto-update stok
-      const { data: stokData } = await db.from('stok').select('id, stok_saat_ini')
-        .eq('cafe_id', cafeId).ilike('nama_bahan', bahan);
+      const { data: stokData } = await db.from('stok')
+        .select('id, stok_saat_ini')
+        .eq('cafe_id', cafeId)
+        .ilike('nama_bahan', bahan);
 
       if (stokData && stokData.length > 0) {
         const stokBaru = parseFloat(stokData[0].stok_saat_ini) + jumlah;
-        await db.from('stok').update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() }).eq('id', stokData[0].id);
+        await db.from('stok')
+          .update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() })
+          .eq('id', stokData[0].id);
       } else {
         await db.from('stok').insert({
-          cafe_id: cafeId, nama_bahan: bahan, kategori: 'Bahan Baku',
-          satuan, stok_saat_ini: jumlah,
+          cafe_id: cafeId, nama_bahan: bahan,
+          kategori: 'Bahan Baku', satuan,
+          stok_saat_ini: jumlah,
           stok_minimum: Math.max(1, Math.floor(jumlah * 0.2))
         });
       }
 
       const msg = document.getElementById('form-msg');
-      msg.textContent = '✅ Tersimpan! Cashflow & stok otomatis terupdate.';
+      msg.textContent  = '✅ Tersimpan! Cashflow & stok terupdate.';
       msg.style.display = 'inline';
       setTimeout(() => { msg.style.display = 'none'; }, 3500);
 
@@ -195,6 +258,7 @@
     function resetForm() {
       ['f-bahan','f-supplier','f-jumlah','f-harga'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-tanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('preview-total').style.display = 'none';
     }
 
     loadPengadaan();
