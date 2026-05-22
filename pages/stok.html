@@ -278,8 +278,8 @@
     });
 
     function updateBarPreview(valOverride, minOverride) {
-      const val = valOverride ?? parseFloat(document.getElementById('f-stok-baru').value) || 0;
-      const min = minOverride ?? editMin;
+      const val = (valOverride !== undefined) ? valOverride : (parseFloat(document.getElementById('f-stok-baru').value) || 0);
+      const min = (minOverride !== undefined) ? minOverride : editMin;
       const pct = Math.min(100, Math.round((val / (min * 2 || 1)) * 100));
       const bar = document.getElementById('stok-bar');
       bar.style.width = pct + '%';
