@@ -239,6 +239,35 @@
     }
   </style>
 
+
+  <!-- MODAL KONFIRMASI DELETE NOTA -->
+  <div id="deleteNotaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:440px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+        <h3 style="font-size:16px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px">Hapus Nota Pengadaan?</h3>
+        <p style="font-size:13px;color:var(--text-3);line-height:1.6">
+          Nota <strong id="del-nota-id" style="color:var(--text-1)"></strong><br>
+          dari <strong id="del-supplier" style="color:var(--text-1)"></strong><br>
+          <span id="del-summary" style="color:var(--text-3)"></span>
+        </p>
+      </div>
+      <div style="background:var(--red-dim);border:1px solid rgba(192,57,43,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--red);line-height:1.6">
+        ⚠️ <strong>Perhatian:</strong> Menghapus nota ini akan otomatis:<br>
+        • Mengurangi stok bahan baku yang sudah ditambahkan<br>
+        • Menghapus entri cashflow terkait nota ini
+      </div>
+      <div style="display:flex;gap:10px">
+        <button id="btn-confirm-delete" onclick="konfirmasiDeleteNota()"
+          style="flex:1;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.15s"
+          onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          🗑 Ya, Hapus & Rollback
+        </button>
+        <button class="btn-outline" style="flex:1;padding:11px" onclick="closeDeleteNotaModal()">Batal</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script>
@@ -316,6 +345,9 @@
               <span class="nota-badge" style="background:var(--accent-dim);color:var(--accent)">${nota.items.length} item</span>
               <span class="nota-total">${formatRp(nota.total)}</span>
               <span id="chevron-${idx}" style="color:var(--text-3);font-size:12px;transition:transform 0.2s">▼</span>
+              <button onclick="event.stopPropagation();openDeleteNota('${nota.nota_id}','${nota.supplier||''}',${nota.items.length},${nota.total})"
+                style="background:var(--red-dim);border:none;color:var(--red);width:28px;height:28px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0"
+                title="Hapus nota ini">🗑</button>
             </div>
           </div>
           <div class="nota-items" id="nota-items-${idx}">
@@ -354,7 +386,76 @@
       renderNota(filtered);
     }
 
-    // ── SUPPLIER AUTOCOMPLETE ─────────────────────
+    // ── DELETE NOTA WITH ROLLBACK ─────────────────
+    let deleteNotaId = null;
+
+    function openDeleteNota(notaId, supplier, itemCount, total) {
+      deleteNotaId = notaId;
+      document.getElementById('del-nota-id').textContent  = notaId;
+      document.getElementById('del-supplier').textContent = supplier || '—';
+      document.getElementById('del-summary').textContent  = itemCount + ' item · ' + formatRp(total);
+      document.getElementById('deleteNotaModal').style.display = 'flex';
+    }
+
+    function closeDeleteNotaModal() {
+      document.getElementById('deleteNotaModal').style.display = 'none';
+      deleteNotaId = null;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('deleteNotaModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('deleteNotaModal')) closeDeleteNotaModal();
+      });
+    });
+
+    async function konfirmasiDeleteNota() {
+      if (!deleteNotaId) return;
+
+      const btn = document.getElementById('btn-confirm-delete');
+      btn.textContent = '⏳ Menghapus...'; btn.disabled = true;
+
+      const cafeId = await getCafeId();
+
+      // 1. Ambil semua item di nota ini untuk rollback stok
+      const { data: items, error: fetchErr } = await db.from('pengadaan')
+        .select('*').eq('cafe_id', cafeId).eq('nota_id', deleteNotaId);
+
+      if (fetchErr) {
+        alert('Gagal ambil data nota: ' + fetchErr.message);
+        btn.textContent = '🗑 Ya, Hapus & Rollback'; btn.disabled = false;
+        return;
+      }
+
+      // 2. Rollback stok — kurangi jumlah yang pernah ditambah
+      for (const item of items) {
+        const { data: stokData } = await db.from('stok').select('id, stok_saat_ini')
+          .eq('cafe_id', cafeId).ilike('nama_bahan', item.nama_bahan);
+        if (stokData && stokData.length > 0) {
+          const stokBaru = Math.max(0, parseFloat(stokData[0].stok_saat_ini) - item.jumlah);
+          await db.from('stok').update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() })
+            .eq('id', stokData[0].id);
+        }
+      }
+
+      // 3. Hapus entri cashflow terkait nota ini
+      await db.from('cashflow')
+        .delete()
+        .eq('cafe_id', cafeId)
+        .like('keterangan', `%Nota ${deleteNotaId}%`);
+
+      // 4. Hapus semua item pengadaan di nota ini
+      const { error: delErr } = await db.from('pengadaan')
+        .delete().eq('cafe_id', cafeId).eq('nota_id', deleteNotaId);
+
+      btn.textContent = '🗑 Ya, Hapus & Rollback'; btn.disabled = false;
+
+      if (delErr) { alert('Gagal hapus: ' + delErr.message); return; }
+
+      closeDeleteNotaModal();
+      await loadPengadaan();
+    }
+
+        // ── SUPPLIER AUTOCOMPLETE ─────────────────────
     async function loadSupplierList() {
       const cafeId = await getCafeId();
       const { data } = await db.from('supplier').select('nama').eq('cafe_id', cafeId).order('nama');
