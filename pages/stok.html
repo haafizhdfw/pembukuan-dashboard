@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CaféBook — Stok</title>
+  <title>PantauCuan — Stok</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
     <nav class="sidebar-nav">
-      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
       <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
@@ -21,7 +29,7 @@
       <a href="stok.html" class="nav-item active"><span class="nav-icon">🗂️</span> Stok</a>
     </nav>
     <div class="sidebar-footer">
-      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
       <div class="cafe-sub">Periode: <span id="periode"></span></div>
     </div>
   </aside>
@@ -29,15 +37,16 @@
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 class="page-title">Manajemen Stok</h1>
+        <h1 class="page-title">Stok <span class="amber-dot"></span></h1>
         <p class="page-sub">Monitor ketersediaan bahan baku secara real-time.</p>
       </div>
       <div class="topbar-right">
-        <button class="btn-primary" onclick="document.getElementById('addModal').style.display='flex'">+ Tambah Bahan</button>
+        <button class="btn-primary" onclick="openAddModal()">+ Tambah Bahan</button>
       </div>
     </header>
 
-    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
       <div class="kpi-card">
         <div class="kpi-label">Total Item Stok</div>
         <div class="kpi-value" id="kpi-total">—</div>
@@ -45,58 +54,117 @@
       <div class="kpi-card">
         <div class="kpi-label">Stok Aman</div>
         <div class="kpi-value" id="kpi-aman" style="color:var(--green)">—</div>
+        <div class="kpi-change positive">Tidak perlu diorder</div>
       </div>
-      <div class="kpi-card" style="border-color:rgba(241,108,80,0.3);background:var(--red-dim)">
+      <div class="kpi-card" style="border-color:rgba(192,57,43,0.2);background:var(--red-dim)">
         <div class="kpi-label">Hampir Habis</div>
         <div class="kpi-value" id="kpi-habis" style="color:var(--red)">—</div>
         <div class="kpi-change negative">Perlu segera diorder</div>
       </div>
     </section>
 
+    <!-- TABLE -->
     <div class="table-card">
       <div class="table-header">
         <h3>Daftar Stok Bahan</h3>
-        <input id="searchStok" placeholder="Cari bahan..." oninput="filterStok(this.value)" style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-1);padding:7px 14px;font-size:13px;outline:none" />
+        <input id="searchStok" placeholder="🔍 Cari bahan..."
+          oninput="filterStok(this.value)"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text-1);padding:7px 13px;font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border-color 0.15s;width:200px"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border-2)'" />
       </div>
       <table class="data-table">
-        <thead><tr><th>Nama Bahan</th><th>Kategori</th><th>Stok Saat Ini</th><th>Min. Stok</th><th>Satuan</th><th>Status</th><th>Aksi</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Nama Bahan</th>
+            <th>Kategori</th>
+            <th>Stok Saat Ini</th>
+            <th>Min. Stok</th>
+            <th>Satuan</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
         <tbody id="tbody-stok">
-          <tr><td colspan="7" style="color:var(--text-3);text-align:center;padding:24px">Memuat...</td></tr>
+          <tr><td colspan="7" style="color:var(--text-3);text-align:center;padding:32px">Memuat...</td></tr>
         </tbody>
       </table>
     </div>
   </main>
 
-  <!-- MODAL TAMBAH -->
-  <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:460px;max-width:95vw">
-      <h3 style="font-family:'Syne',sans-serif;font-size:17px;margin-bottom:20px">Tambah Bahan Stok</h3>
+  <!-- MODAL TAMBAH BAHAN -->
+  <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:460px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+        <h3 style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Tambah Bahan Stok</h3>
+        <button onclick="closeAddModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
+      </div>
       <div class="form-grid">
-        <div class="form-group span-2"><label>Nama Bahan</label><input id="f-nama" type="text" placeholder="cth: Susu Full Cream" /></div>
-        <div class="form-group"><label>Kategori</label><input id="f-kat" type="text" placeholder="cth: Dairy" /></div>
-        <div class="form-group"><label>Satuan</label>
-          <select id="f-satuan"><option>Liter</option><option>Kilogram</option><option>Gram</option><option>Pcs</option><option>Botol</option><option>Dus</option></select>
+        <div class="form-group span-2">
+          <label>Nama Bahan</label>
+          <input id="f-nama" type="text" placeholder="cth: Susu Full Cream" />
         </div>
-        <div class="form-group"><label>Stok Awal</label><input id="f-stok" type="number" placeholder="cth: 10" /></div>
-        <div class="form-group"><label>Stok Minimum</label><input id="f-min" type="number" placeholder="cth: 5" /></div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <input id="f-kat" type="text" placeholder="cth: Dairy" />
+        </div>
+        <div class="form-group">
+          <label>Satuan</label>
+          <select id="f-satuan">
+            <option>Liter</option>
+            <option>Kilogram</option>
+            <option>Gram</option>
+            <option>Pcs</option>
+            <option>Botol</option>
+            <option>Dus</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Stok Awal</label>
+          <input id="f-stok" type="number" placeholder="cth: 10" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Stok Minimum</label>
+          <input id="f-min" type="number" placeholder="cth: 5" min="0" />
+        </div>
         <div class="form-group span-2" style="flex-direction:row;gap:10px;margin-top:4px">
           <button class="btn-primary" id="btn-tambah" style="flex:1" onclick="tambahStok()">Simpan</button>
-          <button class="btn-outline" style="flex:1" onclick="document.getElementById('addModal').style.display='none'">Batal</button>
+          <button class="btn-outline" style="flex:1" onclick="closeAddModal()">Batal</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- MODAL UPDATE STOK -->
-  <div id="updateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:360px;max-width:95vw">
-      <h3 style="font-family:'Syne',sans-serif;font-size:17px;margin-bottom:6px" id="update-nama">Update Stok</h3>
-      <p style="font-size:13px;color:var(--text-3);margin-bottom:20px">Stok saat ini: <span id="update-current"></span></p>
+  <div id="updateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:380px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h3 id="update-nama" style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Update Stok</h3>
+        <button onclick="closeUpdateModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:22px">
+        Stok saat ini: <strong id="update-current" style="color:var(--text-1)"></strong>
+      </p>
+
+      <!-- Progress bar stok -->
+      <div style="margin-bottom:20px">
+        <div style="background:var(--surface-2);border-radius:99px;height:8px;overflow:hidden">
+          <div id="stok-bar" style="height:100%;border-radius:99px;transition:width 0.4s;background:var(--green);width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span style="font-size:11px;color:var(--text-3)">0</span>
+          <span id="stok-bar-label" style="font-size:11px;color:var(--text-3)"></span>
+        </div>
+      </div>
+
       <div class="form-grid">
-        <div class="form-group span-2"><label>Stok Baru</label><input id="f-stok-baru" type="number" placeholder="Masukkan jumlah baru" /></div>
+        <div class="form-group span-2">
+          <label>Stok Baru</label>
+          <input id="f-stok-baru" type="number" placeholder="Masukkan jumlah baru" min="0" oninput="updateBarPreview()" />
+        </div>
         <div class="form-group span-2" style="flex-direction:row;gap:10px">
-          <button class="btn-primary" style="flex:1" onclick="updateStok()">Update</button>
-          <button class="btn-outline" style="flex:1" onclick="document.getElementById('updateModal').style.display='none'">Batal</button>
+          <button class="btn-primary" style="flex:1" onclick="updateStok()">Update Stok</button>
+          <button class="btn-outline" style="flex:1" onclick="closeUpdateModal()">Batal</button>
         </div>
       </div>
     </div>
@@ -105,82 +173,154 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script>
-    document.getElementById('periode').textContent = new Date().toLocaleDateString('id-ID',{month:'long',year:'numeric'});
-    let allStok = [];
-    let editId = null;
+    document.getElementById('periode').textContent = new Date().toLocaleDateString('id-ID', {month:'long', year:'numeric'});
 
-    function formatRp(n){ return 'Rp '+(n||0).toLocaleString('id-ID'); }
+    let allStok   = [];
+    let editId    = null;
+    let editMin   = 0;
+    let editMax   = 0;
+
+    // Nama cafe
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
 
     async function loadStok() {
       const cafeId = await getCafeId();
-      const {data} = await db.from('stok').select('*').eq('cafe_id',cafeId).order('nama_bahan');
-      allStok = data||[];
+      const { data } = await db.from('stok').select('*').eq('cafe_id', cafeId).order('nama_bahan');
+      allStok = data || [];
       renderStok(allStok);
       updateKPI(allStok);
     }
 
     function updateKPI(data) {
-      const low = data.filter(s=>parseFloat(s.stok_saat_ini)<=parseFloat(s.stok_minimum));
-      document.getElementById('kpi-total').textContent = data.length+' Item';
-      document.getElementById('kpi-aman').textContent  = (data.length-low.length)+' Item';
-      document.getElementById('kpi-habis').textContent = low.length+' Item';
+      const low = data.filter(s => parseFloat(s.stok_saat_ini) <= parseFloat(s.stok_minimum));
+      document.getElementById('kpi-total').textContent = data.length + ' Item';
+      document.getElementById('kpi-aman').textContent  = (data.length - low.length) + ' Item';
+      document.getElementById('kpi-habis').textContent = low.length + ' Item';
     }
 
     function renderStok(data) {
       const tbody = document.getElementById('tbody-stok');
-      if(!data.length){ tbody.innerHTML='<tr><td colspan="7" style="color:var(--text-3);text-align:center;padding:24px">Belum ada data stok.</td></tr>'; return; }
-      tbody.innerHTML = data.map(s=>{
-        const cur=parseFloat(s.stok_saat_ini), min=parseFloat(s.stok_minimum);
-        const isDanger=cur<=min/2, isWarn=cur<=min&&cur>min/2;
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-3);text-align:center;padding:32px">Belum ada data stok.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(s => {
+        const cur      = parseFloat(s.stok_saat_ini);
+        const min      = parseFloat(s.stok_minimum);
+        const isDanger = cur <= min / 2;
+        const isWarn   = cur <= min && cur > min / 2;
+        const pct      = Math.min(100, Math.round((cur / (min * 2)) * 100));
+
         const badge = isDanger
           ? '<span class="badge danger">Hampir Habis</span>'
-          : isWarn ? '<span class="badge pending">Menipis</span>'
-          : '<span class="badge success">Aman</span>';
+          : isWarn
+            ? '<span class="badge pending">Menipis</span>'
+            : '<span class="badge success">Aman</span>';
+
+        const barColor = isDanger ? 'var(--red)' : isWarn ? 'var(--orange)' : 'var(--green)';
+
         return `<tr>
-          <td style="color:var(--text-1);font-weight:500">${s.nama_bahan}</td>
-          <td style="color:var(--text-2)">${s.kategori||'—'}</td>
-          <td style="color:${isDanger?'var(--red)':isWarn?'var(--orange)':'var(--green)'}">${cur}</td>
+          <td>
+            <div style="font-weight:600;color:var(--text-1);margin-bottom:4px">${s.nama_bahan}</div>
+            <div style="height:4px;background:var(--surface-2);border-radius:99px;width:80px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${barColor};border-radius:99px;transition:width 0.3s"></div>
+            </div>
+          </td>
+          <td style="color:var(--text-2)">${s.kategori || '—'}</td>
+          <td style="font-weight:700;color:${isDanger ? 'var(--red)' : isWarn ? 'var(--orange)' : 'var(--green)'}">${cur}</td>
           <td style="color:var(--text-3)">${min}</td>
           <td style="color:var(--text-3)">${s.satuan}</td>
           <td>${badge}</td>
-          <td><button onclick="openUpdate('${s.id}','${s.nama_bahan}',${cur},'${s.satuan}')" style="background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px">Edit Stok</button></td>
+          <td>
+            <button onclick="openUpdate('${s.id}','${s.nama_bahan}',${cur},${min},'${s.satuan}')"
+              style="background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);padding:5px 13px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:all 0.15s"
+              onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+              onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-2)'">
+              ✏ Edit
+            </button>
+          </td>
         </tr>`;
       }).join('');
     }
 
     function filterStok(q) {
-      renderStok(allStok.filter(s=>s.nama_bahan.toLowerCase().includes(q.toLowerCase())));
+      renderStok(allStok.filter(s => s.nama_bahan.toLowerCase().includes(q.toLowerCase())));
     }
 
-    function openUpdate(id, nama, cur, satuan) {
-      editId = id;
-      document.getElementById('update-nama').textContent = 'Update: '+nama;
-      document.getElementById('update-current').textContent = cur+' '+satuan;
-      document.getElementById('f-stok-baru').value = cur;
-      document.getElementById('updateModal').style.display='flex';
+    // MODAL TAMBAH
+    function openAddModal()  { document.getElementById('addModal').style.display = 'flex'; }
+    function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+    document.getElementById('addModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('addModal')) closeAddModal();
+    });
+
+    // MODAL UPDATE
+    function openUpdate(id, nama, cur, min, satuan) {
+      editId  = id;
+      editMin = min;
+      editMax = Math.max(cur * 2, min * 3);
+
+      document.getElementById('update-nama').textContent    = nama;
+      document.getElementById('update-current').textContent = cur + ' ' + satuan;
+      document.getElementById('f-stok-baru').value          = cur;
+      document.getElementById('stok-bar-label').textContent = 'Min: ' + min + ' ' + satuan;
+
+      updateBarPreview(cur, min);
+      document.getElementById('updateModal').style.display = 'flex';
+    }
+
+    function closeUpdateModal() { document.getElementById('updateModal').style.display = 'none'; }
+    document.getElementById('updateModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('updateModal')) closeUpdateModal();
+    });
+
+    function updateBarPreview(valOverride, minOverride) {
+      const val = valOverride ?? parseFloat(document.getElementById('f-stok-baru').value) || 0;
+      const min = minOverride ?? editMin;
+      const pct = Math.min(100, Math.round((val / (min * 2 || 1)) * 100));
+      const bar = document.getElementById('stok-bar');
+      bar.style.width = pct + '%';
+      bar.style.background = val <= min / 2 ? 'var(--red)' : val <= min ? 'var(--orange)' : 'var(--green)';
     }
 
     async function updateStok() {
       const newVal = parseFloat(document.getElementById('f-stok-baru').value);
-      if(isNaN(newVal)){ alert('Masukkan jumlah yang valid.'); return; }
-      const {error} = await db.from('stok').update({stok_saat_ini:newVal, updated_at:new Date().toISOString()}).eq('id',editId);
-      if(error){ alert('Gagal update: '+error.message); return; }
-      document.getElementById('updateModal').style.display='none';
+      if (isNaN(newVal) || newVal < 0) { alert('Masukkan jumlah yang valid.'); return; }
+      const { error } = await db.from('stok')
+        .update({ stok_saat_ini: newVal, updated_at: new Date().toISOString() })
+        .eq('id', editId);
+      if (error) { alert('Gagal update: ' + error.message); return; }
+      closeUpdateModal();
       await loadStok();
     }
 
     async function tambahStok() {
-      const nama  = document.getElementById('f-nama').value.trim();
-      const kat   = document.getElementById('f-kat').value.trim();
-      const satuan= document.getElementById('f-satuan').value;
-      const stok  = parseFloat(document.getElementById('f-stok').value);
-      const min   = parseFloat(document.getElementById('f-min').value);
-      if(!nama||isNaN(stok)||isNaN(min)){ alert('Lengkapi semua field.'); return; }
+      const nama   = document.getElementById('f-nama').value.trim();
+      const kat    = document.getElementById('f-kat').value.trim();
+      const satuan = document.getElementById('f-satuan').value;
+      const stok   = parseFloat(document.getElementById('f-stok').value);
+      const min    = parseFloat(document.getElementById('f-min').value);
+
+      if (!nama || isNaN(stok) || isNaN(min)) { alert('Lengkapi semua field.'); return; }
+
+      const btn = document.getElementById('btn-tambah');
+      btn.textContent = 'Menyimpan...'; btn.disabled = true;
+
       const cafeId = await getCafeId();
-      const {error} = await db.from('stok').insert({cafe_id:cafeId,nama_bahan:nama,kategori:kat||null,satuan,stok_saat_ini:stok,stok_minimum:min});
-      if(error){ alert('Gagal: '+error.message); return; }
-      document.getElementById('addModal').style.display='none';
-      ['f-nama','f-kat','f-stok','f-min'].forEach(id=>document.getElementById(id).value='');
+      const { error } = await db.from('stok').insert({
+        cafe_id: cafeId, nama_bahan: nama,
+        kategori: kat || null, satuan,
+        stok_saat_ini: stok, stok_minimum: min
+      });
+
+      btn.textContent = 'Simpan'; btn.disabled = false;
+      if (error) { alert('Gagal: ' + error.message); return; }
+
+      closeAddModal();
+      ['f-nama','f-kat','f-stok','f-min'].forEach(id => document.getElementById(id).value = '');
       await loadStok();
     }
 
