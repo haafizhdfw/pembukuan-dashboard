@@ -114,44 +114,46 @@
         <button onclick="closeModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
       </div>
       <p style="font-size:13px;color:var(--text-3);margin-bottom:22px">Produk yang ditambah langsung muncul di halaman Kasir.</p>
-      <div class="form-grid">
-        <div class="form-group span-2">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
           <label>Nama Produk</label>
           <input id="f-nama" type="text" placeholder="cth: Kopi Susu Gula Aren" />
         </div>
-        <div class="form-group">
-          <label>Kategori</label>
-          <select id="f-kat">
-            <option>Kopi</option>
-            <option>Non-Kopi</option>
-            <option>Makanan</option>
-            <option>Minuman</option>
-            <option>Snack</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-group">
+            <label>Kategori</label>
+            <select id="f-kat">
+              <option>Kopi</option>
+              <option>Non-Kopi</option>
+              <option>Makanan</option>
+              <option>Minuman</option>
+              <option>Snack</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Harga (Rp)</label>
+            <input id="f-harga" type="number" placeholder="cth: 25000" />
+          </div>
         </div>
-        <div class="form-group">
-          <label>Harga (Rp)</label>
-          <input id="f-harga" type="number" placeholder="cth: 25000" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-group">
+            <label>Emoji / Icon</label>
+            <input id="f-emoji" type="text" placeholder="☕" maxlength="4"
+              style="font-size:22px;text-align:center" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="f-aktif">
+              <option value="true">✅ Aktif (tampil di kasir)</option>
+              <option value="false">🙈 Nonaktif (sembunyikan)</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Emoji / Icon</label>
-          <input id="f-emoji" type="text" placeholder="☕" maxlength="4"
-            style="font-size:22px;text-align:center" />
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select id="f-aktif">
-            <option value="true">✅ Aktif (tampil di kasir)</option>
-            <option value="false">🙈 Nonaktif (sembunyikan)</option>
-          </select>
-        </div>
-        <div class="form-group span-2" style="flex-direction:row;gap:10px;margin-top:6px">
+        <div style="display:flex;gap:10px;margin-top:4px">
           <button class="btn-primary" id="btn-simpan" style="flex:1" onclick="simpanProduk()">Simpan</button>
           <button class="btn-outline" style="flex:1" onclick="closeModal()">Batal</button>
         </div>
-        <div class="form-group span-2">
-          <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500">✅ Berhasil disimpan!</span>
-        </div>
+        <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500">✅ Berhasil disimpan!</span>
       </div>
     </div>
   </div>
