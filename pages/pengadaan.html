@@ -416,17 +416,33 @@
 
       const cafeId = await getCafeId();
 
-      // 1. Ambil semua item di nota ini untuk rollback stok
-      const { data: items, error: fetchErr } = await db.from('pengadaan')
-        .select('*').eq('cafe_id', cafeId).eq('nota_id', deleteNotaId);
+      // Cek apakah ini nota lama (nota_id = null, key = NO-NOTA-{uuid})
+      // atau nota baru (nota_id = nomor nota asli)
+      const isLegacy = deleteNotaId.startsWith('NO-NOTA-');
+      const realId   = isLegacy ? deleteNotaId.replace('NO-NOTA-', '') : null;
+
+      // 1. Ambil semua item di nota ini
+      let query = db.from('pengadaan').select('*').eq('cafe_id', cafeId);
+      if (isLegacy) {
+        query = query.eq('id', realId); // data lama: hapus by row id
+      } else {
+        query = query.eq('nota_id', deleteNotaId); // data baru: hapus by nota_id
+      }
+      const { data: items, error: fetchErr } = await query;
 
       if (fetchErr) {
-        alert('Gagal ambil data nota: ' + fetchErr.message);
+        alert('Gagal ambil data: ' + fetchErr.message);
         btn.textContent = '🗑 Ya, Hapus & Rollback'; btn.disabled = false;
         return;
       }
 
-      // 2. Rollback stok — kurangi jumlah yang pernah ditambah
+      if (!items || items.length === 0) {
+        alert('Data tidak ditemukan.');
+        btn.textContent = '🗑 Ya, Hapus & Rollback'; btn.disabled = false;
+        return;
+      }
+
+      // 2. Rollback stok
       for (const item of items) {
         const { data: stokData } = await db.from('stok').select('id, stok_saat_ini')
           .eq('cafe_id', cafeId).ilike('nama_bahan', item.nama_bahan);
@@ -437,18 +453,29 @@
         }
       }
 
-      // 3. Hapus entri cashflow terkait nota ini
-      await db.from('cashflow')
-        .delete()
-        .eq('cafe_id', cafeId)
-        .like('keterangan', `%Nota ${deleteNotaId}%`);
+      // 3. Hapus entri cashflow terkait
+      if (isLegacy) {
+        // Data lama: cashflow dicatat dengan keterangan "Pengadaan: {nama_bahan}"
+        for (const item of items) {
+          await db.from('cashflow').delete().eq('cafe_id', cafeId)
+            .like('keterangan', `%${item.nama_bahan}%`)
+            .eq('tanggal', item.tanggal);
+        }
+      } else {
+        await db.from('cashflow').delete().eq('cafe_id', cafeId)
+          .like('keterangan', `%Nota ${deleteNotaId}%`);
+      }
 
-      // 4. Hapus semua item pengadaan di nota ini
-      const { error: delErr } = await db.from('pengadaan')
-        .delete().eq('cafe_id', cafeId).eq('nota_id', deleteNotaId);
+      // 4. Hapus item pengadaan
+      let delQuery = db.from('pengadaan').delete().eq('cafe_id', cafeId);
+      if (isLegacy) {
+        delQuery = delQuery.eq('id', realId);
+      } else {
+        delQuery = delQuery.eq('nota_id', deleteNotaId);
+      }
+      const { error: delErr } = await delQuery;
 
       btn.textContent = '🗑 Ya, Hapus & Rollback'; btn.disabled = false;
-
       if (delErr) { alert('Gagal hapus: ' + delErr.message); return; }
 
       closeDeleteNotaModal();
