@@ -79,7 +79,12 @@
             💳 Bayar Sekarang
           </button>
           <button class="btn-outline full-w" style="margin-top:8px" onclick="clearOrder()">Batal</button>
-          <div id="bayar-msg" style="font-size:13px;color:var(--green);display:none;margin-top:10px;text-align:center;font-weight:500;padding:10px;background:var(--green-dim);border-radius:var(--radius-sm)"></div>
+          <div id="bayar-msg" style="display:none;margin-top:12px;background:var(--green-dim);border:1px solid rgba(45,122,79,0.2);border-radius:var(--radius-sm);padding:14px 16px;text-align:center">
+            <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px">✅ Transaksi Berhasil!</div>
+            <div id="struk-number" style="font-size:22px;font-weight:800;color:var(--text-1);letter-spacing:0.05em;font-family:'Inter',sans-serif;margin-bottom:4px"></div>
+            <div id="struk-total" style="font-size:13px;color:var(--text-2);font-weight:500"></div>
+            <div id="struk-time" style="font-size:11px;color:var(--text-3);margin-top:2px"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -225,22 +230,35 @@
 
     function clearOrder() { order = {}; renderOrder(); }
 
+    async function generateNomorStruk(cafeId, today) {
+      // Hitung transaksi hari ini untuk nomor urut
+      const { data } = await db.from('transaksi')
+        .select('id').eq('cafe_id', cafeId).eq('tanggal', today);
+      const urut = ((data?.length || 0) + 1).toString().padStart(3, '0');
+      // Format: TRX-YYMMDD-NNN
+      const tgl = today.replace(/-/g, '').slice(2); // 260523
+      return `TRX-${tgl}-${urut}`;
+    }
+
     async function bayar() {
       const items = Object.entries(order);
       if (!items.length) { alert('Tambahkan menu dulu!'); return; }
 
       const total    = items.reduce((s, [,{harga, qty}]) => s + (harga * qty), 0);
       const itemsArr = items.map(([nama, {harga, qty}]) => ({nama, harga, qty, subtotal: harga * qty}));
-      const today    = new Date().toISOString().split('T')[0];
+      const now      = new Date();
+      const today    = now.toISOString().split('T')[0];
 
       const btn = document.getElementById('btn-bayar');
       btn.textContent = 'Memproses...'; btn.disabled = true;
 
-      const cafeId = await getCafeId();
+      const cafeId      = await getCafeId();
+      const nomorStruk  = await generateNomorStruk(cafeId, today);
 
-      // Simpan transaksi
+      // Simpan transaksi dengan nomor struk
       const { error: errTrx } = await db.from('transaksi').insert({
-        cafe_id: cafeId, total, items: itemsArr, tanggal: today
+        cafe_id: cafeId, total, items: itemsArr, tanggal: today,
+        nomor_struk: nomorStruk
       });
       if (errTrx) {
         alert('Gagal simpan transaksi: ' + errTrx.message);
@@ -248,18 +266,24 @@
         return;
       }
 
-      // Auto-catat cashflow
+      // Auto-catat cashflow dengan nomor struk
       await db.from('cashflow').insert({
-        cafe_id: cafeId, keterangan: 'Penjualan Kasir',
+        cafe_id: cafeId,
+        keterangan: `Penjualan Kasir ${nomorStruk}`,
         jenis: 'pemasukan', kategori: 'Penjualan', nominal: total, tanggal: today
       });
 
       btn.textContent = '💳 Bayar Sekarang'; btn.disabled = false;
 
+      // Tampil struk
+      const jam = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+      const tglLabel = now.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+      document.getElementById('struk-number').textContent = nomorStruk;
+      document.getElementById('struk-total').textContent  = 'Total: Rp ' + total.toLocaleString('id-ID');
+      document.getElementById('struk-time').textContent   = tglLabel + ' · ' + jam + ' WIB';
       const msg = document.getElementById('bayar-msg');
-      msg.textContent  = '✅ Transaksi berhasil! Total: Rp ' + total.toLocaleString('id-ID');
       msg.style.display = 'block';
-      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      setTimeout(() => { msg.style.display = 'none'; }, 5000);
 
       clearOrder();
       await loadOmzet();
@@ -268,9 +292,10 @@
     async function loadOmzet() {
       const cafeId = await getCafeId();
       const today  = new Date().toISOString().split('T')[0];
-      const { data } = await db.from('transaksi').select('total').eq('cafe_id', cafeId).eq('tanggal', today);
-      const total = data?.reduce((s, r) => s + r.total, 0) || 0;
-      document.getElementById('omzet-hari').textContent = 'Omzet hari ini: Rp ' + total.toLocaleString('id-ID');
+      const { data } = await db.from('transaksi').select('total,nomor_struk').eq('cafe_id', cafeId).eq('tanggal', today);
+      const total  = data?.reduce((s, r) => s + r.total, 0) || 0;
+      const count  = data?.length || 0;
+      document.getElementById('omzet-hari').textContent = `Omzet hari ini: Rp ${total.toLocaleString('id-ID')} (${count} struk)`;
     }
 
     loadMenu();
