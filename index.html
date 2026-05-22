@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CaféBook — Dashboard</title>
+  <title>PantauCuan — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
     <nav class="sidebar-nav">
-      <a href="index.html" class="nav-item active"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="index.html" class="nav-item active"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="pages/produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
       <a href="pages/pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="pages/cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
@@ -21,7 +29,7 @@
       <a href="pages/stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
     </nav>
     <div class="sidebar-footer">
-      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
       <div class="cafe-sub">Periode: <span id="periode"></span></div>
     </div>
   </aside>
@@ -29,15 +37,16 @@
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-sub">Selamat datang kembali, semua berjalan baik hari ini.</p>
+        <h1 class="page-title">Dashboard <span class="amber-dot"></span></h1>
+        <p class="page-sub" id="greeting">Selamat datang kembali — semua berjalan baik hari ini.</p>
       </div>
       <div class="topbar-right">
         <span class="date-badge" id="tanggal-hari-ini"></span>
-        <button class="btn-primary" onclick="window.location='pages/kasir.html'">+ Transaksi</button>
+        <button class="btn-primary" onclick="window.location='pages/kasir.html'">+ Transaksi Baru</button>
       </div>
     </header>
 
+    <!-- KPI GRID -->
     <section class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">Omzet Hari Ini</div>
@@ -52,20 +61,24 @@
       <div class="kpi-card accent">
         <div class="kpi-label">Laba Bersih Hari Ini</div>
         <div class="kpi-value" id="kpi-laba">—</div>
-        <div class="kpi-change" style="color:var(--accent);opacity:0.7">omzet minus pengeluaran</div>
+        <div class="kpi-change" style="color:rgba(255,255,255,0.65)">omzet minus pengeluaran</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Status Stok</div>
-        <div class="kpi-value" style="font-size:16px">Bahan Baku</div>
+        <div class="kpi-label">Alert Stok</div>
+        <div class="kpi-value" style="font-size:15px;letter-spacing:-0.02em">Bahan Baku</div>
         <div class="kpi-change warning" id="kpi-stok-alert">memuat...</div>
       </div>
     </section>
 
+    <!-- CHARTS -->
     <section class="charts-row">
       <div class="chart-card wide">
         <div class="chart-header">
           <h3>Cashflow Minggu Ini</h3>
-          <div class="chart-legend"><span class="leg-in">● Pemasukan</span><span class="leg-out">● Pengeluaran</span></div>
+          <div class="chart-legend">
+            <span class="leg-in">● Pemasukan</span>
+            <span class="leg-out">● Pengeluaran</span>
+          </div>
         </div>
         <canvas id="cashflowChart"></canvas>
       </div>
@@ -75,6 +88,7 @@
       </div>
     </section>
 
+    <!-- BOTTOM ROW -->
     <section class="bottom-row">
       <div class="table-card">
         <div class="table-header">
@@ -82,17 +96,19 @@
           <a href="pages/kasir.html" class="link-more">Lihat semua →</a>
         </div>
         <table class="data-table">
-          <thead><tr><th>Waktu</th><th>Item</th><th>Total</th><th>Status</th></tr></thead>
+          <thead>
+            <tr><th>Waktu</th><th>Item</th><th>Total</th><th>Status</th></tr>
+          </thead>
           <tbody id="tbody-transaksi">
-            <tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:20px">Memuat...</td></tr>
+            <tr><td colspan="4" style="color:var(--text-3);text-align:center;padding:24px">Memuat...</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="alert-card">
         <div class="table-header">
-          <h3>⚠ Stok Hampir Habis</h3>
-          <a href="pages/stok.html" class="link-more">Kelola stok →</a>
+          <h3>⚠️ Stok Hampir Habis</h3>
+          <a href="pages/stok.html" class="link-more">Kelola →</a>
         </div>
         <ul class="alert-list" id="stok-alert-list">
           <li style="color:var(--text-3);font-size:13px;padding:10px 0">Memuat...</li>
@@ -114,8 +130,23 @@
   <script src="js/dashboard.js"></script>
   <script>
     const now = new Date();
-    document.getElementById('tanggal-hari-ini').textContent = now.toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'});
-    document.getElementById('periode').textContent = now.toLocaleDateString('id-ID', {month:'long',year:'numeric'});
+
+    // Tanggal & periode
+    document.getElementById('tanggal-hari-ini').textContent =
+      now.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('periode').textContent =
+      now.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
+
+    // Greeting berdasarkan jam
+    const jam = now.getHours();
+    const greet = jam < 11 ? 'Selamat pagi' : jam < 15 ? 'Selamat siang' : jam < 18 ? 'Selamat sore' : 'Selamat malam';
+    document.getElementById('greeting').textContent = `${greet} — semua berjalan baik hari ini.`;
+
+    // Nama cafe dari Supabase
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
   </script>
 </body>
 </html>
