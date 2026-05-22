@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CaféBook — Cashflow</title>
+  <title>PantauCuan — Cashflow</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
     <nav class="sidebar-nav">
-      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
       <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="cashflow.html" class="nav-item active"><span class="nav-icon">💸</span> Cashflow</a>
@@ -21,7 +29,7 @@
       <a href="stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
     </nav>
     <div class="sidebar-footer">
-      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
       <div class="cafe-sub">Periode: <span id="periode"></span></div>
     </div>
   </aside>
@@ -29,22 +37,23 @@
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 class="page-title">Cashflow</h1>
+        <h1 class="page-title">Cashflow <span class="amber-dot"></span></h1>
         <p class="page-sub">Pantau semua uang masuk dan keluar secara real-time.</p>
       </div>
       <div class="topbar-right">
-        <button class="btn-primary" onclick="document.getElementById('addModal').style.display='flex'">+ Tambah</button>
+        <button class="btn-primary" onclick="openModal()">+ Tambah</button>
       </div>
     </header>
 
-    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
       <div class="kpi-card">
         <div class="kpi-label">Total Pemasukan (Bulan Ini)</div>
-        <div class="kpi-value" id="kpi-masuk">—</div>
+        <div class="kpi-value" id="kpi-masuk" style="color:var(--green)">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Total Pengeluaran (Bulan Ini)</div>
-        <div class="kpi-value" id="kpi-keluar">—</div>
+        <div class="kpi-value" id="kpi-keluar" style="color:var(--red)">—</div>
       </div>
       <div class="kpi-card accent">
         <div class="kpi-label">Net Cashflow (Bulan Ini)</div>
@@ -52,18 +61,24 @@
       </div>
     </section>
 
-    <div class="chart-card" style="margin-bottom:24px">
+    <!-- CHART -->
+    <div class="chart-card" style="margin-bottom:20px">
       <div class="chart-header">
         <h3>Tren Cashflow — 7 Hari Terakhir</h3>
-        <div class="chart-legend"><span class="leg-in">● Pemasukan</span><span class="leg-out">● Pengeluaran</span></div>
+        <div class="chart-legend">
+          <span class="leg-in">● Pemasukan</span>
+          <span class="leg-out">● Pengeluaran</span>
+        </div>
       </div>
       <canvas id="cashflowLine" style="max-height:240px"></canvas>
     </div>
 
+    <!-- TABLE -->
     <div class="table-card">
       <div class="table-header">
         <h3>Semua Transaksi</h3>
-        <select id="filter-kategori" style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-2);padding:6px 12px;font-size:13px" onchange="loadCashflow()">
+        <select id="filter-kategori" onchange="loadCashflow()"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text-2);padding:7px 12px;font-size:12.5px;font-family:'Inter',sans-serif;outline:none;cursor:pointer">
           <option value="">Semua Kategori</option>
           <option value="Penjualan">Penjualan</option>
           <option value="Bahan Baku">Bahan Baku</option>
@@ -73,7 +88,9 @@
         </select>
       </div>
       <table class="data-table">
-        <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Masuk</th><th>Keluar</th></tr></thead>
+        <thead>
+          <tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Masuk</th><th>Keluar</th></tr>
+        </thead>
         <tbody id="tbody-cashflow">
           <tr><td colspan="5" style="color:var(--text-3);text-align:center;padding:24px">Memuat...</td></tr>
         </tbody>
@@ -82,9 +99,12 @@
   </main>
 
   <!-- MODAL -->
-  <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:460px;max-width:95vw">
-      <h3 style="font-family:'Syne',sans-serif;font-size:17px;margin-bottom:20px">Tambah Transaksi Cashflow</h3>
+  <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:480px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+        <h3 style="font-family:'Inter',sans-serif;font-size:16px;font-weight:700;letter-spacing:-0.02em">Tambah Transaksi Cashflow</h3>
+        <button onclick="closeModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
+      </div>
       <div class="form-grid">
         <div class="form-group span-2">
           <label>Keterangan</label>
@@ -93,8 +113,8 @@
         <div class="form-group">
           <label>Jenis</label>
           <select id="f-jenis">
-            <option value="pemasukan">Pemasukan</option>
-            <option value="pengeluaran">Pengeluaran</option>
+            <option value="pemasukan">💚 Pemasukan</option>
+            <option value="pengeluaran">🔴 Pengeluaran</option>
           </select>
         </div>
         <div class="form-group">
@@ -117,10 +137,10 @@
         </div>
         <div class="form-group span-2" style="flex-direction:row;gap:10px;margin-top:4px">
           <button class="btn-primary" id="btn-simpan" style="flex:1" onclick="simpanCashflow()">Simpan</button>
-          <button class="btn-outline" style="flex:1" onclick="document.getElementById('addModal').style.display='none'">Batal</button>
+          <button class="btn-outline" style="flex:1" onclick="closeModal()">Batal</button>
         </div>
         <div class="form-group span-2">
-          <span id="form-msg" style="font-size:13px;color:var(--green);display:none">✅ Berhasil disimpan!</span>
+          <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500">✅ Berhasil disimpan!</span>
         </div>
       </div>
     </div>
@@ -130,81 +150,114 @@
   <script src="../js/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    Chart.defaults.color = '#8b8fa8';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
-    Chart.defaults.font.family = 'DM Sans';
+    Chart.defaults.color = '#8A8A82';
+    Chart.defaults.borderColor = 'rgba(0,0,0,0.05)';
+    Chart.defaults.font.family = 'Inter';
 
     const now = new Date();
-    document.getElementById('periode').textContent = now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+    document.getElementById('periode').textContent = now.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
     document.getElementById('f-tanggal').value = now.toISOString().split('T')[0];
 
+    // Nama cafe
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
+
     function formatRp(n) { return 'Rp ' + (n||0).toLocaleString('id-ID'); }
-    function formatTgl(d) { return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short'}); }
+    function formatTgl(d) {
+      return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+    }
 
     function badgeKat(kat) {
       const map = {
-        'Penjualan': 'background:rgba(62,207,142,0.15);color:#3ecf8e',
-        'Bahan Baku': 'background:rgba(123,140,222,0.15);color:#7b8cde',
-        'Operasional': 'background:rgba(245,166,35,0.12);color:#f5a623',
-        'Gaji': 'background:rgba(241,108,80,0.15);color:#f16c50',
-        'Lainnya': 'background:rgba(85,89,117,0.3);color:#8b8fa8',
+        'Penjualan':  'background:var(--green-dim);color:var(--green)',
+        'Bahan Baku': 'background:var(--accent-dim);color:var(--accent)',
+        'Operasional':'background:var(--amber-dim);color:var(--amber-2)',
+        'Gaji':       'background:var(--red-dim);color:var(--red)',
+        'Lainnya':    'background:var(--surface-2);color:var(--text-3)',
       };
       return `<span class="badge" style="${map[kat]||map['Lainnya']}">${kat}</span>`;
     }
 
+    function openModal()  { document.getElementById('addModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('addModal').style.display = 'none'; }
+
+    // Close modal on backdrop click
+    document.getElementById('addModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('addModal')) closeModal();
+    });
+
     let lineChart = null;
 
     async function loadKPI() {
-      const cafeId = await getCafeId();
+      const cafeId   = await getCafeId();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
       const lastDay  = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().split('T')[0];
-      const { data } = await db.from('cashflow').select('jenis,nominal').eq('cafe_id',cafeId).gte('tanggal',firstDay).lte('tanggal',lastDay);
-      const masuk  = data?.filter(r=>r.jenis==='pemasukan').reduce((s,r)=>s+r.nominal,0)||0;
-      const keluar = data?.filter(r=>r.jenis==='pengeluaran').reduce((s,r)=>s+r.nominal,0)||0;
+      const { data } = await db.from('cashflow').select('jenis,nominal').eq('cafe_id', cafeId).gte('tanggal', firstDay).lte('tanggal', lastDay);
+      const masuk  = data?.filter(r => r.jenis === 'pemasukan').reduce((s, r) => s + r.nominal, 0) || 0;
+      const keluar = data?.filter(r => r.jenis === 'pengeluaran').reduce((s, r) => s + r.nominal, 0) || 0;
       document.getElementById('kpi-masuk').textContent  = formatRp(masuk);
       document.getElementById('kpi-keluar').textContent = formatRp(keluar);
-      document.getElementById('kpi-net').textContent    = formatRp(masuk-keluar);
+      document.getElementById('kpi-net').textContent    = formatRp(masuk - keluar);
     }
 
     async function loadChart() {
       const cafeId = await getCafeId();
-      const days=[], masukArr=[], keluarArr=[];
-      const dayLabels=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-      for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0]);}
-      for(const day of days){
-        const {data} = await db.from('cashflow').select('jenis,nominal').eq('cafe_id',cafeId).eq('tanggal',day);
-        masukArr.push(data?.filter(r=>r.jenis==='pemasukan').reduce((s,r)=>s+r.nominal,0)||0);
-        keluarArr.push(data?.filter(r=>r.jenis==='pengeluaran').reduce((s,r)=>s+r.nominal,0)||0);
+      const days = [];
+      const dayLabels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
       }
-      if(lineChart) lineChart.destroy();
-      lineChart = new Chart(document.getElementById('cashflowLine'),{
-        type:'line',
-        data:{
-          labels: days.map(d=>dayLabels[new Date(d).getDay()]),
-          datasets:[
-            {label:'Pemasukan',data:masukArr,borderColor:'#3ecf8e',backgroundColor:'rgba(62,207,142,0.08)',tension:0.4,fill:true,pointRadius:4},
-            {label:'Pengeluaran',data:keluarArr,borderColor:'#f16c50',backgroundColor:'rgba(241,108,80,0.06)',tension:0.4,fill:true,pointRadius:4}
+
+      // 1 query untuk 7 hari
+      const { data: allCf } = await db.from('cashflow')
+        .select('jenis,nominal,tanggal').eq('cafe_id', cafeId)
+        .gte('tanggal', days[0]).lte('tanggal', days[6]);
+
+      const masukArr  = days.map(day => allCf?.filter(r => r.tanggal === day && r.jenis === 'pemasukan').reduce((s,r) => s+r.nominal, 0) || 0);
+      const keluarArr = days.map(day => allCf?.filter(r => r.tanggal === day && r.jenis === 'pengeluaran').reduce((s,r) => s+r.nominal, 0) || 0);
+
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(document.getElementById('cashflowLine'), {
+        type: 'line',
+        data: {
+          labels: days.map(d => dayLabels[new Date(d + 'T00:00:00').getDay()]),
+          datasets: [
+            { label:'Pemasukan',   data: masukArr,  borderColor: '#4A7C59', backgroundColor: 'rgba(74,124,89,0.08)',  tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#4A7C59' },
+            { label:'Pengeluaran', data: keluarArr, borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.06)', tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#c0392b' }
           ]
         },
-        options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>'Rp '+(v/1000000).toFixed(1)+'jt'}}}}
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'jt' } }
+          }
+        }
       });
     }
 
     async function loadCashflow() {
-      const cafeId = await getCafeId();
+      const cafeId    = await getCafeId();
       const filterKat = document.getElementById('filter-kategori').value;
-      let query = db.from('cashflow').select('*').eq('cafe_id',cafeId).order('tanggal',{ascending:false}).limit(50);
-      if(filterKat) query = query.eq('kategori', filterKat);
+      let query = db.from('cashflow').select('*').eq('cafe_id', cafeId).order('tanggal', {ascending: false}).limit(50);
+      if (filterKat) query = query.eq('kategori', filterKat);
       const { data, error } = await query;
       const tbody = document.getElementById('tbody-cashflow');
-      if(error||!data||data.length===0){tbody.innerHTML='<tr><td colspan="5" style="color:var(--text-3);text-align:center;padding:24px">Belum ada data.</td></tr>';return;}
-      tbody.innerHTML = data.map(r=>`
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-3);text-align:center;padding:32px">Belum ada data.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(r => `
         <tr>
-          <td>${formatTgl(r.tanggal)}</td>
-          <td style="color:var(--text-1)">${r.keterangan}</td>
+          <td style="color:var(--text-3);white-space:nowrap">${formatTgl(r.tanggal)}</td>
+          <td style="color:var(--text-1);font-weight:500">${r.keterangan}</td>
           <td>${badgeKat(r.kategori)}</td>
-          <td style="color:var(--green);font-weight:500">${r.jenis==='pemasukan'?formatRp(r.nominal):'—'}</td>
-          <td style="color:var(--red);font-weight:500">${r.jenis==='pengeluaran'?formatRp(r.nominal):'—'}</td>
+          <td style="color:var(--green);font-weight:600">${r.jenis === 'pemasukan' ? formatRp(r.nominal) : '—'}</td>
+          <td style="color:var(--red);font-weight:600">${r.jenis === 'pengeluaran' ? formatRp(r.nominal) : '—'}</td>
         </tr>`).join('');
     }
 
@@ -214,24 +267,32 @@
       const kat     = document.getElementById('f-kat').value;
       const nominal = parseInt(document.getElementById('f-nominal').value);
       const tanggal = document.getElementById('f-tanggal').value;
-      if(!ket||!nominal||!tanggal){alert('Lengkapi semua field.');return;}
+      if (!ket || !nominal || !tanggal) { alert('Lengkapi semua field.'); return; }
+
       const btn = document.getElementById('btn-simpan');
-      btn.textContent='Menyimpan...';btn.disabled=true;
+      btn.textContent = 'Menyimpan...'; btn.disabled = true;
+
       const cafeId = await getCafeId();
-      const {error} = await db.from('cashflow').insert({cafe_id:cafeId,keterangan:ket,jenis,kategori:kat,nominal,tanggal});
-      btn.textContent='Simpan';btn.disabled=false;
-      if(error){alert('Gagal: '+error.message);return;}
-      const msg=document.getElementById('form-msg');
-      msg.style.display='inline';
-      setTimeout(()=>{msg.style.display='none';document.getElementById('addModal').style.display='none';},1500);
-      document.getElementById('f-ket').value='';
-      document.getElementById('f-nominal').value='';
+      const { error } = await db.from('cashflow').insert({ cafe_id: cafeId, keterangan: ket, jenis, kategori: kat, nominal, tanggal });
+
+      btn.textContent = 'Simpan'; btn.disabled = false;
+      if (error) { alert('Gagal: ' + error.message); return; }
+
+      const msg = document.getElementById('form-msg');
+      msg.style.display = 'inline';
+      setTimeout(() => {
+        msg.style.display = 'none';
+        closeModal();
+        document.getElementById('f-ket').value = '';
+        document.getElementById('f-nominal').value = '';
+      }, 1500);
+
       await loadKPI();
       await loadChart();
       await loadCashflow();
     }
 
-    (async()=>{ await loadKPI(); await loadChart(); await loadCashflow(); })();
+    (async () => { await loadKPI(); await loadChart(); await loadCashflow(); })();
   </script>
 </body>
 </html>
