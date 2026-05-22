@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CaféBook — Kasir</title>
+  <title>PantauCuan — Kasir</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-icon">☕</span><span class="logo-text">CaféBook</span></div>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
     <nav class="sidebar-nav">
-      <a href="../index.html" class="nav-item"><span class="nav-icon">⬛</span> Dashboard</a>
+      <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
       <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
@@ -21,7 +29,7 @@
       <a href="stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
     </nav>
     <div class="sidebar-footer">
-      <div class="cafe-name">☕ Kopi Nusantara</div>
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
       <div class="cafe-sub" id="liveClock"></div>
     </div>
   </aside>
@@ -29,7 +37,7 @@
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 class="page-title">Kasir</h1>
+        <h1 class="page-title">Kasir <span class="amber-dot"></span></h1>
         <p class="page-sub">Input transaksi penjualan harian.</p>
       </div>
       <div class="topbar-right">
@@ -37,145 +45,220 @@
       </div>
     </header>
 
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+      <!-- MENU GRID -->
       <div class="table-card">
         <div class="table-header">
           <h3>Pilih Menu</h3>
-          <input id="searchMenu" placeholder="Cari menu..." style="background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--text-1);padding:7px 14px;font-size:13px;outline:none" oninput="filterMenu(this.value)" />
+          <input id="searchMenu" placeholder="Cari menu..."
+            style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text-1);padding:7px 13px;font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border-color 0.15s"
+            oninput="filterMenu(this.value)"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border-2)'" />
         </div>
-        <div class="menu-grid" id="menuGrid"><p style="color:var(--text-3);font-size:13px">Memuat menu...</p></div>
+        <div class="menu-grid" id="menuGrid">
+          <p style="color:var(--text-3);font-size:13px">Memuat menu...</p>
+        </div>
       </div>
 
+      <!-- ORDER PANEL -->
       <div class="table-card" style="display:flex;flex-direction:column">
         <div class="table-header"><h3>Pesanan</h3></div>
-        <div id="orderList" style="flex:1;min-height:200px"></div>
-        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
-          <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
-          <div class="summary-row bold" style="font-size:16px;margin-top:8px;padding-top:8px">
-            <span>Total</span><span id="total" class="val-green">Rp 0</span>
+        <div id="orderList" style="flex:1;min-height:200px;overflow-y:auto"></div>
+        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:12px">
+          <div class="summary-row">
+            <span style="color:var(--text-3)">Subtotal</span>
+            <span id="subtotal" style="font-weight:500">Rp 0</span>
           </div>
-          <button class="btn-primary full-w" style="margin-top:16px" onclick="bayar()">💳 Bayar Sekarang</button>
+          <div class="summary-row bold" style="font-size:17px;margin-top:10px;padding-top:10px">
+            <span>Total</span>
+            <span id="total" style="color:var(--accent)">Rp 0</span>
+          </div>
+          <button id="btn-bayar" class="btn-primary full-w" style="margin-top:14px;padding:12px" onclick="bayar()">
+            💳 Bayar Sekarang
+          </button>
           <button class="btn-outline full-w" style="margin-top:8px" onclick="clearOrder()">Batal</button>
-          <span id="bayar-msg" style="font-size:13px;color:var(--green);display:none;margin-top:8px;display:block;text-align:center"></span>
+          <div id="bayar-msg" style="font-size:13px;color:var(--green);display:none;margin-top:10px;text-align:center;font-weight:500;padding:10px;background:var(--green-dim);border-radius:var(--radius-sm)"></div>
         </div>
       </div>
     </div>
   </main>
 
   <style>
-    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-    .menu-item{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.15s}
-    .menu-item:hover{border-color:var(--accent);background:var(--accent-dim)}
-    .menu-item-name{font-size:13px;font-weight:500;color:var(--text-1);margin-bottom:4px}
-    .menu-item-price{font-size:12px;color:var(--accent)}
-    .order-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px}
-    .order-name{font-size:13px;color:var(--text-1);flex:1}
-    .qty-controls{display:flex;align-items:center;gap:8px}
-    .qty-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-1);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px}
-    .qty-num{font-size:13px;color:var(--text-2);min-width:16px;text-align:center}
-    .order-price{font-size:13px;color:var(--green);min-width:80px;text-align:right}
-    .empty-order{text-align:center;color:var(--text-3);font-size:13px;padding:40px 0}
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+    }
+    .menu-item {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 10px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .menu-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .menu-item:active { transform: translateY(0); }
+    .menu-item-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+    .menu-item-name  { font-size: 12.5px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; line-height: 1.3; }
+    .menu-item-price { font-size: 12px; color: var(--accent); font-weight: 500; }
+
+    .order-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .order-name  { font-size: 13px; color: var(--text-1); flex: 1; font-weight: 500; }
+    .qty-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      color: var(--text-1);
+      width: 26px; height: 26px;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.1s;
+    }
+    .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .qty-num  { font-size: 13px; font-weight: 600; color: var(--text-1); min-width: 18px; text-align: center; }
+    .order-price { font-size: 13px; color: var(--accent); font-weight: 600; min-width: 80px; text-align: right; }
+    .empty-order { text-align: center; color: var(--text-3); font-size: 13px; padding: 48px 0; }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
   <script>
     let allMenu = [];
-    let order = {};
+    let order   = {};
 
-    // Clock
-    setInterval(()=>{ document.getElementById('liveClock').textContent = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }, 1000);
+    // Live clock
+    setInterval(() => {
+      document.getElementById('liveClock').textContent =
+        new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    }, 1000);
 
-    // Load menu dari Supabase
+    // Nama cafe
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
+
+    // Load menu
     async function loadMenu() {
       const cafeId = await getCafeId();
-      const { data } = await db.from('menu').select('*').eq('cafe_id', cafeId).eq('aktif', true);
+      const { data } = await db.from('menu').select('*').eq('cafe_id', cafeId).eq('aktif', true).order('nama');
       allMenu = data || [];
       renderMenu(allMenu);
     }
 
     function renderMenu(list) {
       const grid = document.getElementById('menuGrid');
-      if(!list.length){ grid.innerHTML='<p style="color:var(--text-3);font-size:13px">Tidak ada menu.</p>'; return; }
-      grid.innerHTML = list.map(m=>`
-        <div class="menu-item" onclick="addItem('${m.nama}',${m.harga})">
-          <div style="font-size:26px;margin-bottom:6px">${m.emoji||'☕'}</div>
+      if (!list.length) {
+        grid.innerHTML = '<p style="color:var(--text-3);font-size:13px;padding:20px 0">Tidak ada menu aktif.</p>';
+        return;
+      }
+      grid.innerHTML = list.map(m => `
+        <div class="menu-item" onclick="addItem('${m.nama.replace(/'/g,"\\'")}', ${m.harga})">
+          <span class="menu-item-emoji">${m.emoji || '☕'}</span>
           <div class="menu-item-name">${m.nama}</div>
           <div class="menu-item-price">Rp ${m.harga.toLocaleString('id-ID')}</div>
         </div>`).join('');
     }
 
     function filterMenu(q) {
-      renderMenu(allMenu.filter(m=>m.nama.toLowerCase().includes(q.toLowerCase())));
+      renderMenu(allMenu.filter(m => m.nama.toLowerCase().includes(q.toLowerCase())));
     }
 
     function addItem(nama, harga) {
-      if(!order[nama]) order[nama]={harga,qty:0};
+      if (!order[nama]) order[nama] = { harga, qty: 0 };
       order[nama].qty++;
       renderOrder();
     }
 
     function changeQty(nama, delta) {
-      if(!order[nama]) return;
+      if (!order[nama]) return;
       order[nama].qty += delta;
-      if(order[nama].qty<=0) delete order[nama];
+      if (order[nama].qty <= 0) delete order[nama];
       renderOrder();
     }
 
     function renderOrder() {
-      const list = document.getElementById('orderList');
+      const list  = document.getElementById('orderList');
       const items = Object.entries(order);
-      if(!items.length){
-        list.innerHTML='<div class="empty-order">Belum ada pesanan</div>';
-        document.getElementById('subtotal').textContent='Rp 0';
-        document.getElementById('total').textContent='Rp 0';
+      if (!items.length) {
+        list.innerHTML = '<div class="empty-order">Belum ada pesanan<br><span style="font-size:24px;margin-top:8px;display:block">🛒</span></div>';
+        document.getElementById('subtotal').textContent = 'Rp 0';
+        document.getElementById('total').textContent    = 'Rp 0';
         return;
       }
-      let total=0;
-      list.innerHTML = items.map(([nama,{harga,qty}])=>{
-        const sub=harga*qty; total+=sub;
+      let total = 0;
+      list.innerHTML = items.map(([nama, {harga, qty}]) => {
+        const sub = harga * qty; total += sub;
         return `<div class="order-row">
           <div class="order-name">${nama}</div>
           <div class="qty-controls">
-            <button class="qty-btn" onclick="changeQty('${nama}',-1)">−</button>
+            <button class="qty-btn" onclick="changeQty('${nama.replace(/'/g,"\\'")}', -1)">−</button>
             <span class="qty-num">${qty}</span>
-            <button class="qty-btn" onclick="changeQty('${nama}',1)">+</button>
+            <button class="qty-btn" onclick="changeQty('${nama.replace(/'/g,"\\'")}', 1)">+</button>
           </div>
           <div class="order-price">Rp ${sub.toLocaleString('id-ID')}</div>
         </div>`;
       }).join('');
-      document.getElementById('subtotal').textContent='Rp '+total.toLocaleString('id-ID');
-      document.getElementById('total').textContent='Rp '+total.toLocaleString('id-ID');
+      document.getElementById('subtotal').textContent = 'Rp ' + total.toLocaleString('id-ID');
+      document.getElementById('total').textContent    = 'Rp ' + total.toLocaleString('id-ID');
     }
 
-    function clearOrder(){ order={}; renderOrder(); }
+    function clearOrder() { order = {}; renderOrder(); }
 
     async function bayar() {
       const items = Object.entries(order);
-      if(!items.length){ alert('Tambahkan menu dulu!'); return; }
+      if (!items.length) { alert('Tambahkan menu dulu!'); return; }
 
-      const total = items.reduce((s,[,{harga,qty}])=>s+(harga*qty),0);
-      const itemsArr = items.map(([nama,{harga,qty}])=>({nama,harga,qty,subtotal:harga*qty}));
-      const today = new Date().toISOString().split('T')[0];
+      const total    = items.reduce((s, [,{harga, qty}]) => s + (harga * qty), 0);
+      const itemsArr = items.map(([nama, {harga, qty}]) => ({nama, harga, qty, subtotal: harga * qty}));
+      const today    = new Date().toISOString().split('T')[0];
 
-      const btn = document.querySelector('.btn-primary');
-      btn.textContent='Memproses...'; btn.disabled=true;
+      const btn = document.getElementById('btn-bayar');
+      btn.textContent = 'Memproses...'; btn.disabled = true;
 
       const cafeId = await getCafeId();
 
-      // Simpan ke tabel transaksi
-      const {error:errTrx} = await db.from('transaksi').insert({cafe_id:cafeId, total, items:itemsArr, tanggal:today});
-      if(errTrx){ alert('Gagal simpan transaksi: '+errTrx.message); btn.textContent='💳 Bayar Sekarang'; btn.disabled=false; return; }
+      // Simpan transaksi
+      const { error: errTrx } = await db.from('transaksi').insert({
+        cafe_id: cafeId, total, items: itemsArr, tanggal: today
+      });
+      if (errTrx) {
+        alert('Gagal simpan transaksi: ' + errTrx.message);
+        btn.textContent = '💳 Bayar Sekarang'; btn.disabled = false;
+        return;
+      }
 
-      // Auto-catat ke cashflow
-      await db.from('cashflow').insert({cafe_id:cafeId, keterangan:'Penjualan Kasir', jenis:'pemasukan', kategori:'Penjualan', nominal:total, tanggal:today});
+      // Auto-catat cashflow
+      await db.from('cashflow').insert({
+        cafe_id: cafeId, keterangan: 'Penjualan Kasir',
+        jenis: 'pemasukan', kategori: 'Penjualan', nominal: total, tanggal: today
+      });
 
-      btn.textContent='💳 Bayar Sekarang'; btn.disabled=false;
+      btn.textContent = '💳 Bayar Sekarang'; btn.disabled = false;
 
-      const msg=document.getElementById('bayar-msg');
-      msg.textContent='✅ Transaksi berhasil! Total: Rp '+total.toLocaleString('id-ID');
-      msg.style.display='block';
-      setTimeout(()=>{ msg.style.display='none'; },3000);
+      const msg = document.getElementById('bayar-msg');
+      msg.textContent  = '✅ Transaksi berhasil! Total: Rp ' + total.toLocaleString('id-ID');
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
 
       clearOrder();
       await loadOmzet();
@@ -183,15 +266,16 @@
 
     async function loadOmzet() {
       const cafeId = await getCafeId();
-      const today = new Date().toISOString().split('T')[0];
-      const {data} = await db.from('transaksi').select('total').eq('cafe_id',cafeId).eq('tanggal', today);
-      const total = data?.reduce((s,r)=>s+r.total,0)||0;
-      document.getElementById('omzet-hari').textContent = 'Omzet hari ini: Rp '+total.toLocaleString('id-ID');
+      const today  = new Date().toISOString().split('T')[0];
+      const { data } = await db.from('transaksi').select('total').eq('cafe_id', cafeId).eq('tanggal', today);
+      const total = data?.reduce((s, r) => s + r.total, 0) || 0;
+      document.getElementById('omzet-hari').textContent = 'Omzet hari ini: Rp ' + total.toLocaleString('id-ID');
     }
 
     loadMenu();
     loadOmzet();
     renderOrder();
   </script>
+
 </body>
 </html>
