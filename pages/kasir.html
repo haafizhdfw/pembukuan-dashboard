@@ -164,7 +164,7 @@
       const cafeId = await getCafeId();
 
       // Simpan ke tabel transaksi
-      const {error:errTrx} = await db.from('transaksi').insert({cafe_id:cafeId, total, items:itemsArr});
+      const {error:errTrx} = await db.from('transaksi').insert({cafe_id:cafeId, total, items:itemsArr, tanggal:today});
       if(errTrx){ alert('Gagal simpan transaksi: '+errTrx.message); btn.textContent='💳 Bayar Sekarang'; btn.disabled=false; return; }
 
       // Auto-catat ke cashflow
@@ -184,7 +184,7 @@
     async function loadOmzet() {
       const cafeId = await getCafeId();
       const today = new Date().toISOString().split('T')[0];
-      const {data} = await db.from('transaksi').select('total').eq('cafe_id',cafeId).gte('created_at', today+'T00:00:00').lte('created_at', today+'T23:59:59');
+      const {data} = await db.from('transaksi').select('total').eq('cafe_id',cafeId).eq('tanggal', today);
       const total = data?.reduce((s,r)=>s+r.total,0)||0;
       document.getElementById('omzet-hari').textContent = 'Omzet hari ini: Rp '+total.toLocaleString('id-ID');
     }
