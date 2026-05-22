@@ -22,6 +22,7 @@
     <nav class="sidebar-nav">
       <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
       <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
+      <a href="supplier.html" class="nav-item"><span class="nav-icon">🏭</span> Supplier</a>
       <a href="pengadaan.html" class="nav-item active"><span class="nav-icon">📦</span> Pengadaan</a>
       <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
       <a href="labarugi.html" class="nav-item"><span class="nav-icon">📊</span> Laba Rugi</a>
@@ -55,9 +56,14 @@
           <label>Nama Bahan</label>
           <input id="f-bahan" type="text" placeholder="cth: Susu Full Cream" />
         </div>
-        <div class="form-group">
+        <div class="form-group" style="position:relative">
           <label>Supplier</label>
-          <input id="f-supplier" type="text" placeholder="cth: Toko Bahan A" />
+          <input id="f-supplier" type="text" placeholder="Ketik nama supplier..."
+            autocomplete="off"
+            oninput="filterSupplierList(this.value)"
+            onfocus="filterSupplierList(this.value)"
+            onblur="setTimeout(()=>hideDropdown(),200)" />
+          <div id="supplier-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);z-index:100;max-height:200px;overflow-y:auto;margin-top:4px"></div>
         </div>
         <div class="form-group">
           <label>Jumlah</label>
@@ -261,6 +267,43 @@
       document.getElementById('preview-total').style.display = 'none';
     }
 
+    // ── Autocomplete Supplier ──────────────────────────
+    let supplierList = [];
+
+    async function loadSupplierList() {
+      const cafeId = await getCafeId();
+      const { data } = await db.from('supplier').select('nama').eq('cafe_id', cafeId).order('nama');
+      supplierList = data ? data.map(s => s.nama) : [];
+    }
+
+    function filterSupplierList(q) {
+      const dropdown = document.getElementById('supplier-dropdown');
+      const filtered = q
+        ? supplierList.filter(s => s.toLowerCase().includes(q.toLowerCase()))
+        : supplierList;
+
+      if (!filtered.length) { hideDropdown(); return; }
+
+      dropdown.style.display = 'block';
+      dropdown.innerHTML = filtered.map(s => `
+        <div onclick="pilihSupplier('${s.replace(/'/g, "\'")}')"
+          style="padding:10px 14px;font-size:13px;color:var(--text-1);cursor:pointer;transition:background 0.1s;border-bottom:1px solid var(--border)"
+          onmouseover="this.style.background='var(--accent-dim)'"
+          onmouseout="this.style.background='transparent'">
+          🏭 ${s}
+        </div>`).join('');
+    }
+
+    function pilihSupplier(nama) {
+      document.getElementById('f-supplier').value = nama;
+      hideDropdown();
+    }
+
+    function hideDropdown() {
+      document.getElementById('supplier-dropdown').style.display = 'none';
+    }
+
+    loadSupplierList();
     loadPengadaan();
   </script>
 </body>
