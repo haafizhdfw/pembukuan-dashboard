@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PantauCuan — Supplier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14 Q3 4 9 4 Q15 4 15 9 Q15 12 12 12 L9 12" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <circle cx="12" cy="5.5" r="2" fill="#F5A623"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pantau<span>Cuan</span></span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="../index.html" class="nav-item"><span class="nav-icon">▦</span> Dashboard</a>
+      <a href="produk.html" class="nav-item"><span class="nav-icon">🍽️</span> Produk</a>
+      <a href="supplier.html" class="nav-item active"><span class="nav-icon">🏭</span> Supplier</a>
+      <a href="pengadaan.html" class="nav-item"><span class="nav-icon">📦</span> Pengadaan</a>
+      <a href="cashflow.html" class="nav-item"><span class="nav-icon">💸</span> Cashflow</a>
+      <a href="labarugi.html" class="nav-item"><span class="nav-icon">📊</span> Laba Rugi</a>
+      <a href="kasir.html" class="nav-item"><span class="nav-icon">🧾</span> Kasir</a>
+      <a href="stok.html" class="nav-item"><span class="nav-icon">🗂️</span> Stok</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="cafe-name" id="sidebar-cafe-name">☕ Memuat...</div>
+      <div class="cafe-sub">Data Supplier</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">Supplier <span class="amber-dot"></span></h1>
+        <p class="page-sub">Kelola data supplier langganan — otomatis muncul di form Pengadaan.</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" onclick="openModal()">+ Tambah Supplier</button>
+      </div>
+    </header>
+
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Supplier</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ada Kontak</div>
+        <div class="kpi-value" id="kpi-kontak" style="color:var(--green)">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tanpa Kontak</div>
+        <div class="kpi-value" id="kpi-nokontak" style="color:var(--text-3)">—</div>
+      </div>
+    </section>
+
+    <!-- SEARCH + TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Daftar Supplier</h3>
+        <input id="searchSupplier" placeholder="🔍 Cari supplier..."
+          oninput="filterSupplier(this.value)"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text-1);padding:7px 13px;font-size:13px;outline:none;font-family:'Inter',sans-serif;transition:border-color 0.15s;width:220px"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border-2)'" />
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nama Supplier</th>
+            <th>Kontak</th>
+            <th>Alamat</th>
+            <th>Catatan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-supplier">
+          <tr><td colspan="5" style="color:var(--text-3);text-align:center;padding:32px">Memuat...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL TAMBAH/EDIT -->
+  <div id="supplierModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:500px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h3 id="modal-title" style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Tambah Supplier</h3>
+        <button onclick="closeModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px">×</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:22px">Data supplier akan muncul sebagai autocomplete di form Pengadaan.</p>
+
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Nama Supplier</label>
+          <input id="f-nama" type="text" placeholder="cth: PT. Agro Bahan Surabaya" />
+        </div>
+        <div class="form-group">
+          <label>No. Kontak / WA</label>
+          <input id="f-kontak" type="text" placeholder="cth: 08123456789" />
+        </div>
+        <div class="form-group">
+          <label>Alamat</label>
+          <input id="f-alamat" type="text" placeholder="cth: Jl. Raya No. 10, Surabaya" />
+        </div>
+        <div class="form-group span-2">
+          <label>Catatan</label>
+          <input id="f-catatan" type="text" placeholder="cth: Supplier kopi arabika, min order 5kg" />
+        </div>
+        <div class="form-group span-2" style="flex-direction:row;gap:10px;margin-top:4px">
+          <button class="btn-primary" id="btn-simpan" style="flex:1" onclick="simpanSupplier()">Simpan</button>
+          <button class="btn-outline" style="flex:1" onclick="closeModal()">Batal</button>
+        </div>
+        <div class="form-group span-2">
+          <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500">✅ Berhasil disimpan!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL HAPUS KONFIRMASI -->
+  <div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:380px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">Hapus Supplier?</h3>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:24px">
+        Hapus <strong id="delete-nama" style="color:var(--text-1)"></strong>? Data pengadaan yang sudah ada tidak ikut terhapus.
+      </p>
+      <div style="display:flex;gap:10px">
+        <button id="btn-delete-confirm" style="flex:1;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer" onclick="konfirmasiHapus()">Ya, Hapus</button>
+        <button class="btn-outline" style="flex:1" onclick="closeDeleteModal()">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase.js"></script>
+  <script>
+    let allSupplier = [];
+    let editId      = null;
+    let deleteId    = null;
+
+    // Nama cafe
+    (async () => {
+      const { data } = await db.from('cafe').select('nama').limit(1).single();
+      if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
+    })();
+
+    async function loadSupplier() {
+      const cafeId = await getCafeId();
+      const { data } = await db.from('supplier').select('*').eq('cafe_id', cafeId).order('nama');
+      allSupplier = data || [];
+      renderSupplier(allSupplier);
+      updateKPI(allSupplier);
+    }
+
+    function updateKPI(data) {
+      const denganKontak = data.filter(s => s.kontak);
+      document.getElementById('kpi-total').textContent    = data.length + ' Supplier';
+      document.getElementById('kpi-kontak').textContent   = denganKontak.length + ' Supplier';
+      document.getElementById('kpi-nokontak').textContent = (data.length - denganKontak.length) + ' Supplier';
+    }
+
+    function renderSupplier(data) {
+      const tbody = document.getElementById('tbody-supplier');
+      if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:var(--text-3);text-align:center;padding:40px">
+          <div style="font-size:32px;margin-bottom:8px">🏭</div>
+          <div>Belum ada supplier. Klik "+ Tambah Supplier" untuk mulai.</div>
+        </td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.map(s => `
+        <tr>
+          <td>
+            <div style="font-weight:600;color:var(--text-1)">${s.nama}</div>
+          </td>
+          <td>
+            ${s.kontak
+              ? `<a href="https://wa.me/${s.kontak.replace(/\D/g,'')}" target="_blank"
+                  style="color:var(--accent);text-decoration:none;font-weight:500;font-size:13px"
+                  title="Buka WhatsApp">
+                  📱 ${s.kontak}
+                </a>`
+              : '<span style="color:var(--text-3)">—</span>'}
+          </td>
+          <td style="color:var(--text-2);font-size:13px">${s.alamat || '—'}</td>
+          <td style="color:var(--text-3);font-size:12.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.catatan || ''}">${s.catatan || '—'}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button onclick="openEdit('${s.id}')"
+                style="background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:all 0.15s"
+                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-2)'">
+                ✏ Edit
+              </button>
+              <button onclick="openDelete('${s.id}','${s.nama.replace(/'/g, "\\'")}')"
+                style="background:var(--red-dim);border:1px solid transparent;color:var(--red);padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:opacity 0.15s"
+                onmouseover="this.style.opacity='0.7'"
+                onmouseout="this.style.opacity='1'">
+                🗑 Hapus
+              </button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    function filterSupplier(q) {
+      renderSupplier(allSupplier.filter(s =>
+        s.nama.toLowerCase().includes(q.toLowerCase()) ||
+        (s.kontak && s.kontak.includes(q)) ||
+        (s.alamat && s.alamat.toLowerCase().includes(q.toLowerCase()))
+      ));
+    }
+
+    // MODAL TAMBAH/EDIT
+    function openModal() {
+      editId = null;
+      document.getElementById('modal-title').textContent = 'Tambah Supplier';
+      ['f-nama','f-kontak','f-alamat','f-catatan'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('supplierModal').style.display = 'flex';
+    }
+
+    function openEdit(id) {
+      const s = allSupplier.find(x => x.id === id);
+      if (!s) return;
+      editId = id;
+      document.getElementById('modal-title').textContent = 'Edit Supplier';
+      document.getElementById('f-nama').value    = s.nama;
+      document.getElementById('f-kontak').value  = s.kontak  || '';
+      document.getElementById('f-alamat').value  = s.alamat  || '';
+      document.getElementById('f-catatan').value = s.catatan || '';
+      document.getElementById('supplierModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('supplierModal').style.display = 'none';
+      document.getElementById('form-msg').style.display = 'none';
+      editId = null;
+    }
+
+    document.getElementById('supplierModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('supplierModal')) closeModal();
+    });
+
+    async function simpanSupplier() {
+      const nama    = document.getElementById('f-nama').value.trim();
+      const kontak  = document.getElementById('f-kontak').value.trim();
+      const alamat  = document.getElementById('f-alamat').value.trim();
+      const catatan = document.getElementById('f-catatan').value.trim();
+
+      if (!nama) { alert('Nama supplier wajib diisi.'); return; }
+
+      const btn = document.getElementById('btn-simpan');
+      btn.textContent = 'Menyimpan...'; btn.disabled = true;
+
+      const cafeId = await getCafeId();
+      let error;
+
+      if (editId) {
+        ({ error } = await db.from('supplier').update({
+          nama, kontak: kontak||null, alamat: alamat||null, catatan: catatan||null
+        }).eq('id', editId));
+      } else {
+        ({ error } = await db.from('supplier').insert({
+          cafe_id: cafeId, nama,
+          kontak: kontak||null, alamat: alamat||null, catatan: catatan||null
+        }));
+      }
+
+      btn.textContent = 'Simpan'; btn.disabled = false;
+      if (error) { alert('Gagal: ' + error.message); return; }
+
+      const msg = document.getElementById('form-msg');
+      msg.style.display = 'inline';
+      setTimeout(() => { msg.style.display = 'none'; closeModal(); }, 1200);
+      await loadSupplier();
+    }
+
+    // MODAL HAPUS
+    function openDelete(id, nama) {
+      deleteId = id;
+      document.getElementById('delete-nama').textContent = nama;
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+      deleteId = null;
+    }
+
+    document.getElementById('deleteModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+    });
+
+    async function konfirmasiHapus() {
+      if (!deleteId) return;
+      const btn = document.getElementById('btn-delete-confirm');
+      btn.textContent = 'Menghapus...'; btn.disabled = true;
+      const { error } = await db.from('supplier').delete().eq('id', deleteId);
+      btn.textContent = 'Ya, Hapus'; btn.disabled = false;
+      if (error) { alert('Gagal hapus: ' + error.message); return; }
+      closeDeleteModal();
+      await loadSupplier();
+    }
+
+    loadSupplier();
+  </script>
+</body>
+</html>
