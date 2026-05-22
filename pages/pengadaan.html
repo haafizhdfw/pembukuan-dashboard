@@ -39,95 +39,205 @@
     <header class="topbar">
       <div>
         <h1 class="page-title">Pengadaan <span class="amber-dot"></span></h1>
-        <p class="page-sub">Catat pembelian bahan baku — otomatis update stok & cashflow.</p>
+        <p class="page-sub">Catat pembelian per nota — otomatis update stok & cashflow.</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" onclick="openNotaModal()">+ Input Nota Baru</button>
       </div>
     </header>
 
-    <!-- FORM PENGADAAN -->
-    <div class="table-card" style="margin-bottom:16px">
-      <div class="table-header">
-        <h3>+ Tambah Pengadaan</h3>
-        <span style="font-size:12px;color:var(--text-3);font-weight:500">
-          ✅ Auto-update stok & cashflow
-        </span>
+    <!-- KPI -->
+    <section class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Nota (Bulan Ini)</div>
+        <div class="kpi-value" id="kpi-nota">—</div>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nama Bahan</label>
-          <input id="f-bahan" type="text" placeholder="cth: Susu Full Cream" />
-        </div>
-        <div class="form-group" style="position:relative">
-          <label>Supplier</label>
-          <input id="f-supplier" type="text" placeholder="Ketik nama supplier..."
-            autocomplete="off"
-            oninput="filterSupplierList(this.value)"
-            onfocus="filterSupplierList(this.value)"
-            onblur="setTimeout(()=>hideDropdown(),200)" />
-          <div id="supplier-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);z-index:100;max-height:200px;overflow-y:auto;margin-top:4px"></div>
-        </div>
-        <div class="form-group">
-          <label>Jumlah</label>
-          <input id="f-jumlah" type="number" placeholder="cth: 10" min="0" />
-        </div>
-        <div class="form-group">
-          <label>Satuan</label>
-          <select id="f-satuan">
-            <option>Liter</option>
-            <option>Kilogram</option>
-            <option>Gram</option>
-            <option>Pcs</option>
-            <option>Dus</option>
-            <option>Botol</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Harga Satuan (Rp)</label>
-          <input id="f-harga" type="number" placeholder="cth: 15000" min="0" />
-        </div>
-        <div class="form-group">
-          <label>Tanggal Beli</label>
-          <input id="f-tanggal" type="date" />
-        </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Item (Bulan Ini)</div>
+        <div class="kpi-value" id="kpi-item">—</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Total Pengeluaran (Bulan Ini)</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+      </div>
+    </section>
 
-        <!-- PREVIEW TOTAL -->
-        <div class="form-group span-2">
-          <div id="preview-total" style="display:none;background:var(--accent-dim);border:1px solid var(--border-2);border-radius:var(--radius-sm);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px;color:var(--text-2)">Total Pembelian</span>
-            <span id="preview-nominal" style="font-size:16px;font-weight:700;color:var(--accent)">Rp 0</span>
+    <!-- RIWAYAT NOTA -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3 id="tabel-judul">Riwayat Nota Pengadaan</h3>
+        <input id="searchNota" placeholder="🔍 Cari nomor nota / supplier..."
+          oninput="filterNota(this.value)"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text-1);padding:7px 13px;font-size:13px;outline:none;font-family:'Inter',sans-serif;width:240px;transition:border-color 0.15s"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border-2)'" />
+      </div>
+      <div id="nota-list">
+        <div style="color:var(--text-3);text-align:center;padding:40px">Memuat data...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL INPUT NOTA BARU
+  ═══════════════════════════════════════════ -->
+  <div id="notaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);width:600px;max-width:100%;box-shadow:var(--shadow-md);margin:auto">
+
+      <!-- Header -->
+      <div style="padding:24px 28px 0;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Input Nota Pengadaan</h3>
+          <p style="font-size:12.5px;color:var(--text-3);margin-top:3px">Satu nota bisa berisi banyak item bahan baku.</p>
+        </div>
+        <button onclick="closeNotaModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+
+      <div style="padding:20px 28px 28px">
+        <!-- INFO NOTA -->
+        <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;border:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px">Info Nota</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group">
+              <label>Nomor Nota *</label>
+              <input id="f-nota-id" type="text" placeholder="cth: INV/2026/05/001" />
+            </div>
+            <div class="form-group">
+              <label>Tanggal Beli *</label>
+              <input id="f-tanggal" type="date" />
+            </div>
+            <div class="form-group" style="position:relative">
+              <label>Supplier *</label>
+              <input id="f-supplier" type="text" placeholder="Ketik nama supplier..."
+                autocomplete="off"
+                oninput="filterSupplierList(this.value)"
+                onfocus="filterSupplierList(this.value)"
+                onblur="setTimeout(()=>hideDropdown(),200)" />
+              <div id="supplier-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);z-index:200;max-height:160px;overflow-y:auto;margin-top:4px"></div>
+            </div>
+            <div class="form-group">
+              <label>Catatan Nota</label>
+              <input id="f-catatan" type="text" placeholder="cth: pembayaran tunai" />
+            </div>
           </div>
         </div>
 
-        <div class="form-group span-2" style="flex-direction:row;align-items:center;gap:12px;margin-top:4px">
-          <button class="btn-primary" id="btn-simpan" style="padding:10px 28px" onclick="simpanPengadaan()">Simpan</button>
-          <button class="btn-outline" style="padding:10px 28px" onclick="resetForm()">Reset</button>
-          <span id="form-msg" style="font-size:13px;color:var(--green);display:none;font-weight:500"></span>
-        </div>
-      </div>
-    </div>
+        <!-- DAFTAR ITEM -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em">Item Bahan Baku</div>
+            <button onclick="tambahBaris()" style="background:var(--accent-dim);border:1px solid var(--border-2);color:var(--accent);padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-weight:600;font-family:'Inter',sans-serif">+ Tambah Item</button>
+          </div>
 
-    <!-- RIWAYAT TABLE -->
-    <div class="table-card">
-      <div class="table-header">
-        <h3 id="tabel-judul">Riwayat Pengadaan</h3>
-        <span id="tabel-total" style="font-size:13px;color:var(--text-3);font-weight:500">—</span>
+          <!-- Header tabel item -->
+          <div style="display:grid;grid-template-columns:2fr 80px 100px 110px 36px;gap:8px;padding:0 0 6px;border-bottom:1px solid var(--border)">
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em">Nama Bahan</span>
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em">Jumlah</span>
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em">Satuan</span>
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em">Harga/Sat</span>
+            <span></span>
+          </div>
+
+          <div id="item-rows" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+
+          <!-- Total preview -->
+          <div id="total-preview" style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <span style="font-size:13px;color:var(--text-3)">Total Nota:</span>
+            <span id="total-nilai" style="font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-0.02em">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- UPLOAD BUKTI NOTA -->
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Bukti Nota (Opsional)</div>
+          <label id="upload-area" for="f-bukti"
+            style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--border-2);border-radius:var(--radius-sm);padding:24px;cursor:pointer;transition:all 0.15s;background:var(--surface-2)"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-dim)'"
+            onmouseout="this.style.borderColor='var(--border-2)';this.style.background='var(--surface-2)'">
+            <span style="font-size:28px">📎</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text-2)">Klik untuk upload foto / PDF nota</span>
+            <span style="font-size:11.5px;color:var(--text-3)">JPG, PNG, PDF — maks 5MB</span>
+          </label>
+          <input id="f-bukti" type="file" accept="image/*,.pdf" style="display:none" onchange="previewBukti(this)" />
+          <div id="bukti-preview" style="display:none;margin-top:10px;padding:12px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;align-items:center;gap:10px">
+            <span id="bukti-icon" style="font-size:24px">📄</span>
+            <div style="flex:1">
+              <div id="bukti-nama" style="font-size:13px;font-weight:500;color:var(--text-1)"></div>
+              <div id="bukti-size" style="font-size:12px;color:var(--text-3)"></div>
+            </div>
+            <button onclick="hapusBukti()" style="background:var(--red-dim);border:none;color:var(--red);padding:4px 10px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif">Hapus</button>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div style="display:flex;gap:10px">
+          <button class="btn-primary" id="btn-simpan-nota" style="flex:1;padding:11px" onclick="simpanNota()">💾 Simpan Nota</button>
+          <button class="btn-outline" style="flex:1;padding:11px" onclick="closeNotaModal()">Batal</button>
+        </div>
+        <div id="form-msg" style="display:none;margin-top:12px;padding:10px 14px;background:var(--green-dim);border-radius:var(--radius-sm);font-size:13px;color:var(--green);font-weight:500;text-align:center"></div>
       </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Bahan</th>
-            <th>Supplier</th>
-            <th>Jumlah</th>
-            <th>Harga Satuan</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-pengadaan">
-          <tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:24px">Memuat data...</td></tr>
-        </tbody>
-      </table>
     </div>
-  </main>
+  </div>
+
+  <!-- MODAL DETAIL NOTA -->
+  <div id="detailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);width:580px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-md)">
+      <div style="padding:24px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--surface);z-index:1">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px">Detail Nota</div>
+          <h3 id="detail-nota-id" style="font-size:17px;font-weight:700;letter-spacing:-0.02em"></h3>
+        </div>
+        <button onclick="closeDetailModal()" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+      <div id="detail-content" style="padding:24px 28px"></div>
+    </div>
+  </div>
+
+  <style>
+    .nota-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+    .nota-card:hover { box-shadow: var(--shadow-md); }
+    .nota-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      cursor: pointer;
+      background: var(--surface);
+      transition: background 0.15s;
+      gap: 12px;
+    }
+    .nota-header:hover { background: var(--surface-2); }
+    .nota-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+    .nota-number { font-size: 13.5px; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; }
+    .nota-supplier { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+    .nota-meta { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    .nota-total { font-size: 14px; font-weight: 700; color: var(--accent); }
+    .nota-date { font-size: 12px; color: var(--text-3); }
+    .nota-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .nota-items { border-top: 1px solid var(--border); background: var(--surface-2); display: none; }
+    .nota-items.open { display: block; }
+    .item-row {
+      display: grid;
+      grid-template-columns: 2fr 80px 80px 110px 110px;
+      gap: 8px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      align-items: center;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-row-header {
+      font-size: 10.5px; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 10px 18px 6px;
+    }
+  </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase.js"></script>
@@ -136,140 +246,115 @@
     document.getElementById('periode').textContent  = now.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
     document.getElementById('f-tanggal').value = now.toISOString().split('T')[0];
 
+    let allNota      = [];
+    let supplierList = [];
+    let itemCount    = 0;
+    let buktiFile    = null;
+
     // Nama cafe
     (async () => {
       const { data } = await db.from('cafe').select('nama').limit(1).single();
       if (data?.nama) document.getElementById('sidebar-cafe-name').textContent = '☕ ' + data.nama;
     })();
 
-    function formatRp(num) { return 'Rp ' + (num||0).toLocaleString('id-ID'); }
-    function formatTgl(d)  { return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short'}); }
-
-    // Live preview total
-    function updatePreview() {
-      const jumlah = parseFloat(document.getElementById('f-jumlah').value) || 0;
-      const harga  = parseInt(document.getElementById('f-harga').value)   || 0;
-      const total  = jumlah * harga;
-      const box    = document.getElementById('preview-total');
-      box.style.display = (jumlah > 0 && harga > 0) ? 'flex' : 'none';
-      document.getElementById('preview-nominal').textContent = formatRp(total);
-    }
-
-    document.getElementById('f-jumlah').addEventListener('input', updatePreview);
-    document.getElementById('f-harga').addEventListener('input', updatePreview);
-
+    // ── LOAD DATA ────────────────────────────────────
     async function loadPengadaan() {
       const cafeId   = await getCafeId();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
       const lastDay  = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().split('T')[0];
 
-      const { data, error } = await db.from('pengadaan').select('*')
+      const { data } = await db.from('pengadaan').select('*')
         .eq('cafe_id', cafeId).gte('tanggal', firstDay).lte('tanggal', lastDay)
-        .order('tanggal', { ascending: false });
+        .order('tanggal', { ascending: false }).order('nota_id', { ascending: false });
 
-      const tbody = document.getElementById('tbody-pengadaan');
-
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:24px">Error: ${error.message}</td></tr>`;
-        return;
-      }
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-3);text-align:center;padding:32px">Belum ada data pengadaan bulan ini.</td></tr>';
-        document.getElementById('tabel-total').textContent = 'Total: Rp 0';
-        return;
-      }
-
-      const grandTotal = data.reduce((s, r) => s + (r.total||0), 0);
-      document.getElementById('tabel-total').textContent  = 'Total: ' + formatRp(grandTotal);
-      document.getElementById('tabel-judul').textContent = `Riwayat Pengadaan — ${now.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}`;
-
-      tbody.innerHTML = data.map(r => `
-        <tr>
-          <td style="white-space:nowrap">${formatTgl(r.tanggal)}</td>
-          <td style="color:var(--text-1);font-weight:600">${r.nama_bahan}</td>
-          <td style="color:var(--text-2)">${r.supplier || '—'}</td>
-          <td style="color:var(--text-2)">${r.jumlah} ${r.satuan}</td>
-          <td style="color:var(--text-2)">${formatRp(r.harga_satuan)}</td>
-          <td style="color:var(--accent);font-weight:600">${formatRp(r.total)}</td>
-        </tr>`).join('');
+      allNota = groupByNota(data || []);
+      renderNota(allNota);
+      updateKPI(data || []);
+      document.getElementById('tabel-judul').textContent =
+        `Riwayat Nota — ${now.toLocaleDateString('id-ID', {month:'long', year:'numeric'})}`;
     }
 
-    async function simpanPengadaan() {
-      const bahan   = document.getElementById('f-bahan').value.trim();
-      const supplier= document.getElementById('f-supplier').value.trim();
-      const jumlah  = parseFloat(document.getElementById('f-jumlah').value);
-      const satuan  = document.getElementById('f-satuan').value;
-      const harga   = parseInt(document.getElementById('f-harga').value);
-      const tanggal = document.getElementById('f-tanggal').value;
-
-      if (!bahan || !jumlah || !harga || !tanggal) {
-        alert('Lengkapi dulu: Nama Bahan, Jumlah, Harga, dan Tanggal.');
-        return;
-      }
-
-      const btn = document.getElementById('btn-simpan');
-      btn.textContent = 'Menyimpan...'; btn.disabled = true;
-
-      const cafeId       = await getCafeId();
-      const totalNominal = jumlah * harga;
-
-      // 1. Simpan ke pengadaan (total = generated column, tidak perlu dikirim)
-      const { error: errPengadaan } = await db.from('pengadaan').insert({
-        cafe_id: cafeId, nama_bahan: bahan,
-        supplier: supplier || null,
-        jumlah, satuan, harga_satuan: harga, tanggal
+    function groupByNota(data) {
+      const map = {};
+      data.forEach(r => {
+        const key = r.nota_id || `NO-NOTA-${r.id}`;
+        if (!map[key]) map[key] = { nota_id: key, supplier: r.supplier, tanggal: r.tanggal, bukti_url: r.bukti_url, items: [], total: 0 };
+        map[key].items.push(r);
+        map[key].total += r.total || 0;
       });
+      return Object.values(map);
+    }
 
-      btn.textContent = 'Simpan'; btn.disabled = false;
+    function updateKPI(data) {
+      const notas = new Set(data.map(r => r.nota_id).filter(Boolean));
+      document.getElementById('kpi-nota').textContent  = (notas.size || new Set(data.map(r=>r.id)).size) + ' Nota';
+      document.getElementById('kpi-item').textContent  = data.length + ' Item';
+      document.getElementById('kpi-total').textContent = formatRp(data.reduce((s,r) => s+(r.total||0), 0));
+    }
 
-      if (errPengadaan) { alert('Gagal simpan: ' + errPengadaan.message); return; }
-
-      // 2. Auto-catat ke cashflow
-      await db.from('cashflow').insert({
-        cafe_id: cafeId,
-        keterangan: `Pengadaan: ${bahan}${supplier ? ' dari ' + supplier : ''}`,
-        jenis: 'pengeluaran', kategori: 'Bahan Baku',
-        nominal: totalNominal, tanggal
-      });
-
-      // 3. Auto-update stok
-      const { data: stokData } = await db.from('stok')
-        .select('id, stok_saat_ini')
-        .eq('cafe_id', cafeId)
-        .ilike('nama_bahan', bahan);
-
-      if (stokData && stokData.length > 0) {
-        const stokBaru = parseFloat(stokData[0].stok_saat_ini) + jumlah;
-        await db.from('stok')
-          .update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() })
-          .eq('id', stokData[0].id);
-      } else {
-        await db.from('stok').insert({
-          cafe_id: cafeId, nama_bahan: bahan,
-          kategori: 'Bahan Baku', satuan,
-          stok_saat_ini: jumlah,
-          stok_minimum: Math.max(1, Math.floor(jumlah * 0.2))
-        });
+    function renderNota(grouped) {
+      const container = document.getElementById('nota-list');
+      if (!grouped.length) {
+        container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-3)">
+          <div style="font-size:36px;margin-bottom:8px">📦</div>
+          <div>Belum ada pengadaan bulan ini.</div>
+        </div>`;
+        return;
       }
 
-      const msg = document.getElementById('form-msg');
-      msg.textContent  = '✅ Tersimpan! Cashflow & stok terupdate.';
-      msg.style.display = 'inline';
-      setTimeout(() => { msg.style.display = 'none'; }, 3500);
-
-      resetForm();
-      await loadPengadaan();
+      container.innerHTML = grouped.map((nota, idx) => `
+        <div class="nota-card">
+          <div class="nota-header" onclick="toggleNota(${idx})">
+            <div class="nota-header-left">
+              <div>
+                <div class="nota-number">📋 ${nota.nota_id}</div>
+                <div class="nota-supplier">${nota.supplier || '—'} · ${formatTgl(nota.tanggal)}</div>
+              </div>
+            </div>
+            <div class="nota-meta">
+              ${nota.bukti_url ? `<span title="Ada bukti nota" style="font-size:16px;cursor:pointer" onclick="event.stopPropagation();lihatBukti('${nota.bukti_url}')">📎</span>` : ''}
+              <span class="nota-badge" style="background:var(--accent-dim);color:var(--accent)">${nota.items.length} item</span>
+              <span class="nota-total">${formatRp(nota.total)}</span>
+              <span id="chevron-${idx}" style="color:var(--text-3);font-size:12px;transition:transform 0.2s">▼</span>
+            </div>
+          </div>
+          <div class="nota-items" id="nota-items-${idx}">
+            <div class="item-row item-row-header" style="display:grid;grid-template-columns:2fr 80px 80px 110px 110px;gap:8px">
+              <span>Nama Bahan</span><span>Jumlah</span><span>Satuan</span><span>Harga/Sat</span><span>Subtotal</span>
+            </div>
+            ${nota.items.map(item => `
+              <div class="item-row">
+                <span style="color:var(--text-1);font-weight:500">${item.nama_bahan}</span>
+                <span style="color:var(--text-2)">${item.jumlah}</span>
+                <span style="color:var(--text-3)">${item.satuan}</span>
+                <span style="color:var(--text-2)">${formatRp(item.harga_satuan)}</span>
+                <span style="color:var(--accent);font-weight:600">${formatRp(item.total)}</span>
+              </div>`).join('')}
+            <div style="display:flex;justify-content:flex-end;padding:10px 18px;border-top:1px solid var(--border)">
+              <span style="font-size:13px;color:var(--text-3);margin-right:12px">Total Nota:</span>
+              <span style="font-size:14px;font-weight:700;color:var(--accent)">${formatRp(nota.total)}</span>
+            </div>
+          </div>
+        </div>`).join('');
     }
 
-    function resetForm() {
-      ['f-bahan','f-supplier','f-jumlah','f-harga'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('f-tanggal').value = new Date().toISOString().split('T')[0];
-      document.getElementById('preview-total').style.display = 'none';
+    function toggleNota(idx) {
+      const items   = document.getElementById(`nota-items-${idx}`);
+      const chevron = document.getElementById(`chevron-${idx}`);
+      const isOpen  = items.classList.contains('open');
+      items.classList.toggle('open', !isOpen);
+      chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
     }
 
-    // ── Autocomplete Supplier ──────────────────────────
-    let supplierList = [];
+    function filterNota(q) {
+      const filtered = allNota.filter(n =>
+        n.nota_id.toLowerCase().includes(q.toLowerCase()) ||
+        (n.supplier && n.supplier.toLowerCase().includes(q.toLowerCase()))
+      );
+      renderNota(filtered);
+    }
 
+    // ── SUPPLIER AUTOCOMPLETE ─────────────────────
     async function loadSupplierList() {
       const cafeId = await getCafeId();
       const { data } = await db.from('supplier').select('nama').eq('cafe_id', cafeId).order('nama');
@@ -281,13 +366,11 @@
       const filtered = q
         ? supplierList.filter(s => s.toLowerCase().includes(q.toLowerCase()))
         : supplierList;
-
       if (!filtered.length) { hideDropdown(); return; }
-
       dropdown.style.display = 'block';
       dropdown.innerHTML = filtered.map(s => `
-        <div onclick="pilihSupplier('${s.replace(/'/g, "\'")}')"
-          style="padding:10px 14px;font-size:13px;color:var(--text-1);cursor:pointer;transition:background 0.1s;border-bottom:1px solid var(--border)"
+        <div onclick="pilihSupplier('${s.replace(/'/g, "\\'")}')"
+          style="padding:9px 14px;font-size:13px;color:var(--text-1);cursor:pointer;transition:background 0.1s;border-bottom:1px solid var(--border)"
           onmouseover="this.style.background='var(--accent-dim)'"
           onmouseout="this.style.background='transparent'">
           🏭 ${s}
@@ -303,6 +386,207 @@
       document.getElementById('supplier-dropdown').style.display = 'none';
     }
 
+    // ── ITEM ROWS ─────────────────────────────────
+    function tambahBaris() {
+      itemCount++;
+      const id  = itemCount;
+      const row = document.createElement('div');
+      row.id    = `row-${id}`;
+      row.style.cssText = 'display:grid;grid-template-columns:2fr 80px 100px 110px 36px;gap:8px;align-items:center';
+      row.innerHTML = `
+        <input type="text" placeholder="Nama bahan" oninput="hitungTotal()"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-xs);padding:8px 10px;font-size:13px;color:var(--text-1);outline:none;font-family:'Inter',sans-serif;width:100%"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-2)'" />
+        <input type="number" placeholder="Jml" min="0" oninput="hitungTotal()"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-xs);padding:8px 10px;font-size:13px;color:var(--text-1);outline:none;font-family:'Inter',sans-serif;width:100%"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-2)'" />
+        <select oninput="hitungTotal()"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-xs);padding:8px 6px;font-size:13px;color:var(--text-1);outline:none;font-family:'Inter',sans-serif;width:100%">
+          <option>Kilogram</option><option>Liter</option><option>Gram</option><option>Pcs</option><option>Botol</option><option>Dus</option>
+        </select>
+        <input type="number" placeholder="Harga" min="0" oninput="hitungTotal()"
+          style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-xs);padding:8px 10px;font-size:13px;color:var(--text-1);outline:none;font-family:'Inter',sans-serif;width:100%"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border-2)'" />
+        <button onclick="hapusBaris(${id})"
+          style="background:var(--red-dim);border:none;color:var(--red);width:32px;height:32px;border-radius:var(--radius-xs);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">×</button>`;
+      document.getElementById('item-rows').appendChild(row);
+      hitungTotal();
+    }
+
+    function hapusBaris(id) {
+      const el = document.getElementById(`row-${id}`);
+      if (el) el.remove();
+      hitungTotal();
+    }
+
+    function hitungTotal() {
+      const rows  = document.getElementById('item-rows').children;
+      let total   = 0;
+      for (const row of rows) {
+        const inputs = row.querySelectorAll('input[type="number"]');
+        const jumlah = parseFloat(inputs[0]?.value) || 0;
+        const harga  = parseFloat(inputs[1]?.value) || 0;
+        total += jumlah * harga;
+      }
+      document.getElementById('total-nilai').textContent = formatRp(total);
+    }
+
+    function getItems() {
+      const rows  = document.getElementById('item-rows').children;
+      const items = [];
+      for (const row of rows) {
+        const inputs  = row.querySelectorAll('input');
+        const selects = row.querySelectorAll('select');
+        const nama    = inputs[0]?.value.trim();
+        const jumlah  = parseFloat(inputs[1]?.value);
+        const satuan  = selects[0]?.value;
+        const harga   = parseInt(inputs[2]?.value);
+        if (nama && jumlah && harga) items.push({ nama, jumlah, satuan, harga });
+      }
+      return items;
+    }
+
+    // ── UPLOAD BUKTI ──────────────────────────────
+    function previewBukti(input) {
+      buktiFile = input.files[0];
+      if (!buktiFile) return;
+      const isPdf = buktiFile.type === 'application/pdf';
+      document.getElementById('bukti-icon').textContent = isPdf ? '📄' : '🖼️';
+      document.getElementById('bukti-nama').textContent = buktiFile.name;
+      document.getElementById('bukti-size').textContent = (buktiFile.size / 1024).toFixed(0) + ' KB';
+      document.getElementById('bukti-preview').style.display = 'flex';
+      document.getElementById('upload-area').style.display   = 'none';
+    }
+
+    function hapusBukti() {
+      buktiFile = null;
+      document.getElementById('f-bukti').value = '';
+      document.getElementById('bukti-preview').style.display = 'none';
+      document.getElementById('upload-area').style.display   = 'flex';
+    }
+
+    async function uploadBukti(notaId) {
+      if (!buktiFile) return null;
+      const ext  = buktiFile.name.split('.').pop();
+      const path = `${notaId}-${Date.now()}.${ext}`;
+      const { error } = await db.storage.from('bukti-nota').upload(path, buktiFile, { upsert: true });
+      if (error) { console.warn('Upload gagal:', error.message); return null; }
+      const { data } = db.storage.from('bukti-nota').getPublicUrl(path);
+      return data.publicUrl;
+    }
+
+    // ── SIMPAN NOTA ───────────────────────────────
+    async function simpanNota() {
+      const notaId   = document.getElementById('f-nota-id').value.trim();
+      const tanggal  = document.getElementById('f-tanggal').value;
+      const supplier = document.getElementById('f-supplier').value.trim();
+      const items    = getItems();
+
+      if (!notaId)         { alert('Nomor nota wajib diisi.'); return; }
+      if (!tanggal)        { alert('Tanggal wajib diisi.'); return; }
+      if (!supplier)       { alert('Supplier wajib diisi.'); return; }
+      if (!items.length)   { alert('Tambahkan minimal 1 item bahan baku.'); return; }
+
+      const btn = document.getElementById('btn-simpan-nota');
+      btn.textContent = '⏳ Menyimpan...'; btn.disabled = true;
+
+      const cafeId    = await getCafeId();
+      const buktiUrl  = await uploadBukti(notaId);
+      let totalNota   = 0;
+
+      // Insert semua item
+      for (const item of items) {
+        const totalItem = item.jumlah * item.harga;
+        totalNota += totalItem;
+
+        const { error } = await db.from('pengadaan').insert({
+          cafe_id:      cafeId,
+          nota_id:      notaId,
+          nama_bahan:   item.nama,
+          supplier:     supplier,
+          jumlah:       item.jumlah,
+          satuan:       item.satuan,
+          harga_satuan: item.harga,
+          tanggal,
+          bukti_url:    buktiUrl
+        });
+        if (error) { alert('Gagal simpan item: ' + error.message); btn.textContent = '💾 Simpan Nota'; btn.disabled = false; return; }
+
+        // Auto-update stok
+        const { data: stokData } = await db.from('stok').select('id, stok_saat_ini')
+          .eq('cafe_id', cafeId).ilike('nama_bahan', item.nama);
+        if (stokData && stokData.length > 0) {
+          const stokBaru = parseFloat(stokData[0].stok_saat_ini) + item.jumlah;
+          await db.from('stok').update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() }).eq('id', stokData[0].id);
+        } else {
+          await db.from('stok').insert({
+            cafe_id: cafeId, nama_bahan: item.nama, kategori: 'Bahan Baku',
+            satuan: item.satuan, stok_saat_ini: item.jumlah,
+            stok_minimum: Math.max(1, Math.floor(item.jumlah * 0.2))
+          });
+        }
+      }
+
+      // Auto-catat ke cashflow — 1 entri per nota
+      await db.from('cashflow').insert({
+        cafe_id:     cafeId,
+        keterangan:  `Pengadaan Nota ${notaId} — ${supplier}`,
+        jenis:       'pengeluaran',
+        kategori:    'Bahan Baku',
+        nominal:     totalNota,
+        tanggal
+      });
+
+      btn.textContent = '💾 Simpan Nota'; btn.disabled = false;
+
+      const msg = document.getElementById('form-msg');
+      msg.textContent  = `✅ Nota ${notaId} berhasil disimpan! ${items.length} item, total ${formatRp(totalNota)}`;
+      msg.style.display = 'block';
+
+      setTimeout(() => {
+        closeNotaModal();
+        loadPengadaan();
+      }, 2000);
+    }
+
+    // ── BUKTI VIEWER ──────────────────────────────
+    function lihatBukti(url) {
+      window.open(url, '_blank');
+    }
+
+    // ── MODAL CONTROLS ────────────────────────────
+    function openNotaModal() {
+      // Reset form
+      document.getElementById('f-nota-id').value  = '';
+      document.getElementById('f-supplier').value = '';
+      document.getElementById('f-catatan').value  = '';
+      document.getElementById('f-tanggal').value  = new Date().toISOString().split('T')[0];
+      document.getElementById('item-rows').innerHTML = '';
+      document.getElementById('total-nilai').textContent = 'Rp 0';
+      document.getElementById('form-msg').style.display  = 'none';
+      hapusBukti();
+      itemCount = 0;
+      tambahBaris(); // default 1 baris
+      document.getElementById('notaModal').style.display = 'flex';
+    }
+
+    function closeNotaModal() {
+      document.getElementById('notaModal').style.display = 'none';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    document.getElementById('notaModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('notaModal')) closeNotaModal();
+    });
+
+    // ── HELPERS ───────────────────────────────────
+    function formatRp(n)  { return 'Rp ' + (n||0).toLocaleString('id-ID'); }
+    function formatTgl(d) { return new Date(d + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}); }
+
+    // ── INIT ──────────────────────────────────────
     loadSupplierList();
     loadPengadaan();
   </script>
