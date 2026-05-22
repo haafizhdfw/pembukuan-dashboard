@@ -147,15 +147,75 @@
       btn.textContent = 'Menyimpan...'; btn.disabled = true;
 
       const cafeId = await getCafeId();
-      const { error } = await db.from('pengadaan').insert({ cafe_id: cafeId, nama_bahan: bahan, supplier: supplier||null, jumlah, satuan, harga_satuan: harga, tanggal });
+      const totalNominal = jumlah * harga;
+
+      // 1. Simpan ke tabel pengadaan
+      const { error: errPengadaan } = await db.from('pengadaan').insert({
+        cafe_id: cafeId,
+        nama_bahan: bahan,
+        supplier: supplier || null,
+        jumlah,
+        satuan,
+        harga_satuan: harga,
+        total: totalNominal,
+        tanggal
+      });
+
+      if (errPengadaan) {
+        btn.textContent = 'Simpan'; btn.disabled = false;
+        alert('Gagal simpan pengadaan: ' + errPengadaan.message);
+        return;
+      }
+
+      // 2. Auto-catat ke cashflow sebagai pengeluaran Bahan Baku
+      const { error: errCashflow } = await db.from('cashflow').insert({
+        cafe_id: cafeId,
+        keterangan: `Pengadaan: ${bahan}${supplier ? ' dari ' + supplier : ''}`,
+        jenis: 'pengeluaran',
+        kategori: 'Bahan Baku',
+        nominal: totalNominal,
+        tanggal
+      });
+
+      if (errCashflow) {
+        console.warn('Gagal catat cashflow:', errCashflow.message);
+      }
+
+      // 3. Auto-update stok — cari bahan dengan nama yang cocok (case-insensitive)
+      const { data: stokData } = await db
+        .from('stok')
+        .select('id, stok_saat_ini, satuan')
+        .eq('cafe_id', cafeId)
+        .ilike('nama_bahan', bahan);
+
+      if (stokData && stokData.length > 0) {
+        // Bahan ditemukan di stok → tambah jumlahnya
+        const stokLama = parseFloat(stokData[0].stok_saat_ini) || 0;
+        const stokBaru = stokLama + jumlah;
+        const { error: errStok } = await db
+          .from('stok')
+          .update({ stok_saat_ini: stokBaru, updated_at: new Date().toISOString() })
+          .eq('id', stokData[0].id);
+        if (errStok) console.warn('Gagal update stok:', errStok.message);
+      } else {
+        // Bahan belum ada di stok → auto-insert dengan stok minimum default
+        const { error: errInsertStok } = await db.from('stok').insert({
+          cafe_id: cafeId,
+          nama_bahan: bahan,
+          kategori: 'Bahan Baku',
+          satuan,
+          stok_saat_ini: jumlah,
+          stok_minimum: Math.max(1, Math.floor(jumlah * 0.2)) // default min = 20% dari jumlah beli
+        });
+        if (errInsertStok) console.warn('Gagal insert stok baru:', errInsertStok.message);
+      }
 
       btn.textContent = 'Simpan'; btn.disabled = false;
 
-      if (error) { alert('Gagal simpan: ' + error.message); return; }
-
       const msg = document.getElementById('form-msg');
+      msg.textContent = '✅ Tersimpan! Cashflow & stok otomatis terupdate.';
       msg.style.display = 'inline';
-      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      setTimeout(() => { msg.style.display = 'none'; }, 3500);
 
       resetForm();
       await loadPengadaan();
