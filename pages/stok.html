@@ -136,6 +136,20 @@
     </div>
   </div>
 
+  <!-- MODAL HAPUS KONFIRMASI -->
+  <div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:380px;max-width:95vw;box-shadow:var(--shadow-md)">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">Hapus Bahan Stok?</h3>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:24px">
+        Hapus <strong id="delete-nama" style="color:var(--text-1)"></strong>? Data stok ini akan dihapus permanen dan tidak bisa dikembalikan.
+      </p>
+      <div style="display:flex;gap:10px">
+        <button id="btn-delete-confirm" style="flex:1;background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer" onclick="konfirmasiHapus()">Ya, Hapus</button>
+        <button class="btn-outline" style="flex:1" onclick="closeDeleteModal()">Batal</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL UPDATE STOK -->
   <div id="updateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
     <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:380px;max-width:95vw;box-shadow:var(--shadow-md)">
@@ -236,12 +250,20 @@
           <td style="color:var(--text-3)">${s.satuan}</td>
           <td>${badge}</td>
           <td>
-            <button onclick="openUpdate('${s.id}','${s.nama_bahan}',${cur},${min},'${s.satuan}')"
-              style="background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);padding:5px 13px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:all 0.15s"
-              onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-              onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-2)'">
-              ✏ Edit
-            </button>
+            <div style="display:flex;gap:6px">
+              <button onclick="openUpdate('${s.id}','${s.nama_bahan}',${cur},${min},'${s.satuan}')"
+                style="background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:all 0.15s"
+                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                onmouseout="this.style.borderColor='var(--border-2)';this.style.color='var(--text-2)'">
+                ✏ Edit
+              </button>
+              <button onclick="openDelete('${s.id}','${s.nama_bahan.replace(/'/g, "\\'")}')"
+                style="background:var(--red-dim);border:1px solid transparent;color:var(--red);padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;transition:opacity 0.15s"
+                onmouseover="this.style.opacity='0.7'"
+                onmouseout="this.style.opacity='1'">
+                🗑 Hapus
+              </button>
+            </div>
           </td>
         </tr>`;
       }).join('');
@@ -322,6 +344,35 @@
 
       closeAddModal();
       ['f-nama','f-kat','f-stok','f-min'].forEach(id => document.getElementById(id).value = '');
+      await loadStok();
+    }
+
+    // MODAL HAPUS
+    let deleteId = null;
+
+    function openDelete(id, nama) {
+      deleteId = id;
+      document.getElementById('delete-nama').textContent = nama;
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').style.display = 'none';
+      deleteId = null;
+    }
+
+    document.getElementById('deleteModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+    });
+
+    async function konfirmasiHapus() {
+      if (!deleteId) return;
+      const btn = document.getElementById('btn-delete-confirm');
+      btn.textContent = 'Menghapus...'; btn.disabled = true;
+      const { error } = await db.from('stok').delete().eq('id', deleteId);
+      btn.textContent = 'Ya, Hapus'; btn.disabled = false;
+      if (error) { alert('Gagal hapus: ' + error.message); return; }
+      closeDeleteModal();
       await loadStok();
     }
 
