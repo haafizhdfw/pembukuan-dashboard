@@ -107,7 +107,7 @@
   </main>
 
   <!-- MODAL -->
-  <div id="produkModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center">
+  <div id="produkModal" class="modal-overlay" style="display:none">
     <div style="background:var(--surface);border:1px solid var(--border-2);border-radius:var(--radius);padding:32px;width:480px;max-width:95vw;box-shadow:var(--shadow-md)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
         <h3 id="modal-title" style="font-size:16px;font-weight:700;letter-spacing:-0.02em">Tambah Produk</h3>
@@ -159,6 +159,21 @@
   </div>
 
   <style>
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open {
+      display: flex !important;
+    }
+
+    /* produk card styles */
     .produk-card {
       background: var(--surface);
       border: 1.5px solid var(--border);
@@ -316,7 +331,7 @@
       document.getElementById('f-harga').value = '';
       document.getElementById('f-emoji').value = '☕';
       document.getElementById('f-aktif').value = 'true';
-      document.getElementById('produkModal').style.display = 'flex';
+      document.getElementById('produkModal').classList.add('open');
     }
 
     function openEdit(id) {
@@ -329,11 +344,11 @@
       document.getElementById('f-emoji').value = p.emoji || '☕';
       document.getElementById('f-kat').value   = p.kategori || 'Kopi';
       document.getElementById('f-aktif').value = p.aktif ? 'true' : 'false';
-      document.getElementById('produkModal').style.display = 'flex';
+      document.getElementById('produkModal').classList.add('open');
     }
 
     function closeModal() {
-      document.getElementById('produkModal').style.display = 'none';
+      document.getElementById('produkModal').classList.remove('open');
       document.getElementById('form-msg').style.display    = 'none';
       editId = null;
     }
